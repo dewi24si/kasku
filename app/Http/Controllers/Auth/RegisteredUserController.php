@@ -17,6 +17,8 @@ class RegisteredUserController extends Controller
      */
     public function create(): View
     {
+        abort_unless(config('app.registration_enabled'), 404);
+
         return view('auth.register');
     }
 
@@ -25,6 +27,8 @@ class RegisteredUserController extends Controller
      */
     public function store(RegisterRequest $request): RedirectResponse
     {
+        abort_unless(config('app.registration_enabled'), 404);
+
         $user = User::query()->create([
             'name' => $request->validated('name'),
             'email' => $request->validated('email'),

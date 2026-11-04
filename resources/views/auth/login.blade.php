@@ -56,8 +56,10 @@
         </button>
     </form>
 
-    <p class="mt-6 text-center text-sm text-base-content/60">
-        Belum punya akun?
-        <a href="{{ route('register') }}" class="link link-primary font-medium">Daftar</a>
-    </p>
+    @if (config('app.registration_enabled'))
+        <p class="mt-6 text-center text-sm text-base-content/60">
+            Belum punya akun?
+            <a href="{{ route('register') }}" class="link link-primary font-medium">Daftar</a>
+        </p>
+    @endif
 </x-layouts.guest>

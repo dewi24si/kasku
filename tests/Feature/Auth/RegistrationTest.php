@@ -58,4 +58,34 @@ class RegistrationTest extends TestCase
         $response->assertInvalid(['password']);
         $this->assertGuest();
     }
+
+    public function test_registration_screen_returns_not_found_when_registration_is_disabled(): void
+    {
+        config(['app.registration_enabled' => false]);
+
+        $this->get('/register')->assertNotFound();
+    }
+
+    public function test_users_cannot_register_when_registration_is_disabled(): void
+    {
+        config(['app.registration_enabled' => false]);
+
+        $response = $this->post('/register', [
+            'name' => 'Budi Santoso',
+            'email' => 'budi@example.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+        ]);
+
+        $response->assertNotFound();
+        $this->assertGuest();
+        $this->assertDatabaseMissing('users', ['email' => 'budi@example.com']);
+    }
+
+    public function test_login_screen_hides_register_link_when_registration_is_disabled(): void
+    {
+        config(['app.registration_enabled' => false]);
+
+        $this->get('/login')->assertOk()->assertDontSee('Belum punya akun?');
+    }
 }
