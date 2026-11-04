@@ -70,6 +70,26 @@ class Chat extends Component
             ->values();
     }
 
+    /**
+     * How many AI messages the user may still send today, counted from the
+     * user-role rows in chat_messages so the number survives a cache reset.
+     */
+    #[Computed]
+    public function remainingDailyMessages(): int
+    {
+        $sentToday = auth()->user()->chatMessages()
+            ->where('role', ChatRole::User)
+            ->where('created_at', '>=', now()->startOfDay())
+            ->count();
+
+        return max(0, $this->dailyMessageLimit() - $sentToday);
+    }
+
+    public function dailyMessageLimit(): int
+    {
+        return (int) config('services.anthropic.daily_message_limit');
+    }
+
     public function removePhoto(): void
     {
         $this->photo = null;
@@ -101,6 +121,13 @@ class Chat extends Component
             return;
         }
 
+        if ($this->remainingDailyMessages <= 0) {
+            $limit = $this->dailyMessageLimit();
+            $this->addError('message', "Kuota chat AI hari ini sudah habis ({$limit} pesan). Kamu tetap bisa mencatat transaksi manual lewat tombol +. Kuota direset besok.");
+
+            return;
+        }
+
         $rateLimitKey = 'chat-send-message:'.auth()->id();
 
         if (RateLimiter::tooManyAttempts($rateLimitKey, 20)) {
@@ -123,7 +150,7 @@ class Chat extends Component
             $this->dispatch('toast', message: 'Terjadi kesalahan saat menghubungi AI. Silakan coba lagi.', type: 'error');
         }
 
-        unset($this->messages);
+        unset($this->messages, $this->remainingDailyMessages);
         $this->dispatch('chat-message-added');
     }
 

@@ -39,6 +39,7 @@ return [
         'key' => env('ANTHROPIC_API_KEY'),
         'model' => env('ANTHROPIC_MODEL', 'claude-opus-4-8'),
         'base_url' => env('ANTHROPIC_BASE_URL', 'https://api.anthropic.com/v1'),
+        'daily_message_limit' => (int) env('AI_DAILY_MESSAGE_LIMIT', 50),
     ],
 
 ];

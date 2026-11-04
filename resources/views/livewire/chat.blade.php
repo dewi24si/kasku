@@ -96,6 +96,9 @@
         @error('message')
             <p class="pt-2 text-xs text-error">{{ $message }}</p>
         @enderror
+        @if ($this->remainingDailyMessages > 0 && $this->remainingDailyMessages <= 10)
+            <p class="pt-2 text-center text-xs text-base-content/50">Sisa {{ $this->remainingDailyMessages }} pesan hari ini</p>
+        @endif
         @error('photo')
             <p class="pt-2 text-xs text-error">{{ $message }}</p>
         @enderror
