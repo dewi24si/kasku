@@ -1,9 +1,112 @@
 @import 'tailwindcss';
+@plugin "daisyui" {
+    themes: kasku --default, kasku-dark --prefersdark;
+}
+
+@plugin "daisyui/theme" {
+    name: 'kasku';
+    default: true;
+    color-scheme: light;
+
+    --color-base-100: #ffffff;
+    --color-base-200: #f7f7f8;
+    --color-base-300: #e5e5e8;
+    --color-base-content: #111111;
+
+    --color-primary: #111111;
+    --color-primary-content: #ffffff;
+    --color-secondary: #111111;
+    --color-secondary-content: #ffffff;
+    --color-accent: #f59e0b;
+    --color-accent-content: #1c1917;
+    --color-neutral: #6b6b70;
+    --color-neutral-content: #ffffff;
+
+    --color-info: #0ea5e9;
+    --color-info-content: #ffffff;
+    --color-success: #16a34a;
+    --color-success-content: #ffffff;
+    --color-warning: #f59e0b;
+    --color-warning-content: #1c1917;
+    --color-error: #dc2626;
+    --color-error-content: #ffffff;
+
+    --radius-selector: 0.75rem;
+    --radius-field: 0.875rem;
+    --radius-box: 1.25rem;
+    --depth: 0;
+    --noise: 0;
+}
+
+@plugin "daisyui/theme" {
+    name: 'kasku-dark';
+    prefersdark: true;
+    color-scheme: dark;
+
+    --color-base-100: #151b23;
+    --color-base-200: #0b0f14;
+    --color-base-300: #232b35;
+    --color-base-content: #e6e8eb;
+
+    --color-primary: #e6e8eb;
+    --color-primary-content: #0b0f14;
+    --color-secondary: #e6e8eb;
+    --color-secondary-content: #0b0f14;
+    --color-accent: #fbbf24;
+    --color-accent-content: #1c1917;
+    --color-neutral: #9ca3af;
+    --color-neutral-content: #0b0f14;
+
+    --color-info: #38bdf8;
+    --color-info-content: #0b0f14;
+    --color-success: #34d399;
+    --color-success-content: #022c22;
+    --color-warning: #fbbf24;
+    --color-warning-content: #1c1917;
+    --color-error: #f87171;
+    --color-error-content: #450a0a;
+
+    --radius-selector: 0.75rem;
+    --radius-field: 0.875rem;
+    --radius-box: 1.25rem;
+    --depth: 0;
+    --noise: 0;
+}
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+    --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+@keyframes fade-up {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@utility animate-fade-up {
+    animation: fade-up 0.5s ease-out both;
+}
+
+@keyframes pop-in {
+    from {
+        opacity: 0;
+        transform: scale(0.96) translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+@utility animate-pop-in {
+    animation: pop-in 0.25s ease-out both;
 }

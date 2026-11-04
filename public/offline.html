@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Offline - Kasku</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8fafc;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: #0f172a;
+            padding: 1.5rem;
+        }
+
+        .card {
+            max-width: 22rem;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 1rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 2rem 1.5rem;
+            text-align: center;
+        }
+
+        .icon {
+            font-size: 2.5rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 4rem;
+            height: 4rem;
+            border-radius: 1rem;
+            background: #05966922;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin: 0 0 0.5rem;
+        }
+
+        p {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin: 0 0 1.5rem;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.625rem 1rem;
+            border: none;
+            border-radius: 0.75rem;
+            background: #059669;
+            color: #ffffff;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #047857;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">📡</span>
+        <h1>Kamu sedang offline</h1>
+        <p>Koneksi internet terputus. Halaman yang pernah kamu buka mungkin masih bisa diakses, tapi fitur chat butuh koneksi aktif.</p>
+        <button type="button" onclick="location.reload()">Coba Lagi</button>
+    </div>
+</body>
+</html>
