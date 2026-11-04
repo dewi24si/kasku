@@ -36,6 +36,9 @@
     --radius-box: 1.25rem;
     --depth: 0;
     --noise: 0;
+    --border: 1px;
+    --size-field: 0.25rem;
+    --size-selector: 0.25rem;
 }
 
 @plugin "daisyui/theme" {
@@ -71,6 +74,9 @@
     --radius-box: 1.25rem;
     --depth: 0;
     --noise: 0;
+    --border: 1px;
+    --size-field: 0.25rem;
+    --size-selector: 0.25rem;
 }
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
