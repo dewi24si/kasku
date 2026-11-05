@@ -6,9 +6,9 @@
     <title>{{ $title ?? 'Kasku' }}</title>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#ffffff" id="theme-color-meta">
-    <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16.png">
-    <link rel="apple-touch-icon" href="/icons/icon-180.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32.png?v=2">
+    <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16.png?v=2">
+    <link rel="apple-touch-icon" href="/icons/icon-180.png?v=2">
     @include('partials.theme-init')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>

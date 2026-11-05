@@ -1,6 +1,6 @@
-const CACHE_NAME = 'kasku-v17';
+const CACHE_NAME = 'kasku-v18';
 const OFFLINE_URL = '/offline.html';
-const PRECACHE_URLS = [OFFLINE_URL, '/manifest.json', '/icons/icon-192.png', '/icons/icon-512.png'];
+const PRECACHE_URLS = [OFFLINE_URL, '/manifest.json', '/icons/icon-192.png?v=2', '/icons/icon-512.png?v=2'];
 
 self.addEventListener('install', (event) => {
     event.waitUntil(
