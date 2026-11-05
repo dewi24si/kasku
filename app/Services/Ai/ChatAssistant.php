@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Services\Ai\Contracts\RequiresConfirmation;
 use App\Services\Claude\ClaudeClient;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
@@ -56,8 +57,9 @@ class ChatAssistant
 
         try {
             $response = $this->claudeClient->createMessage($systemInstruction, $messages, FunctionDefinitions::all());
-        } catch (ClaudeRequestException) {
-            $this->reply($user, 'Maaf, saya tidak bisa menghubungi layanan AI saat ini. Silakan coba lagi sebentar.');
+        } catch (ClaudeRequestException $exception) {
+            $this->logClaudeFailure($user, $exception);
+            $this->reply($user, $this->claudeFailureMessage($exception));
 
             return;
         }
@@ -163,6 +165,34 @@ class ChatAssistant
     /**
      * @param  array<string, mixed>|null  $attachment
      */
+    /**
+     * Pesan yang ramah pengguna sesuai penyebab kegagalan Claude API. Detail teknis tidak ditampilkan.
+     */
+    private function claudeFailureMessage(ClaudeRequestException $exception): string
+    {
+        return match (true) {
+            $exception->isCreditBalanceExhausted() => 'Fitur AI sedang tidak tersedia. Kamu tetap bisa mencatat transaksi manual lewat tombol +.',
+            $exception->isOverloaded() => 'Layanan AI sedang sibuk. Coba lagi dalam beberapa saat ya.',
+            $exception->isConnectionFailure => 'Koneksi ke layanan AI terputus. Coba kirim ulang pesanmu.',
+            default => 'Maaf, saya tidak bisa menghubungi layanan AI saat ini. Silakan coba lagi sebentar.',
+        };
+    }
+
+    /**
+     * Catat detail teknis kegagalan ke log. Sengaja tidak memakai report() supaya stack trace
+     * (yang bisa memuat argumen header berisi API key) tidak ikut tertulis.
+     */
+    private function logClaudeFailure(User $user, ClaudeRequestException $exception): void
+    {
+        Log::error('Permintaan ke Claude API gagal.', [
+            'user_id' => $user->id,
+            'status' => $exception->status,
+            'error_type' => $exception->errorType,
+            'connection_failure' => $exception->isConnectionFailure,
+            'message' => $exception->getMessage(),
+        ]);
+    }
+
     private function reply(User $user, string $content, ?array $attachment = null): ChatMessage
     {
         return $user->chatMessages()->create([

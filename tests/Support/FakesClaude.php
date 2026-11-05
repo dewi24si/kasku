@@ -48,6 +48,27 @@ trait FakesClaude
     }
 
     /**
+     * Fake respons error dengan format body yang dipakai Anthropic:
+     * {"type": "error", "error": {"type": "...", "message": "..."}}.
+     */
+    protected function fakeClaudeError(int $status, string $errorType, string $errorMessage): void
+    {
+        Http::fake([
+            'api.anthropic.com/*' => Http::response([
+                'type' => 'error',
+                'error' => ['type' => $errorType, 'message' => $errorMessage],
+            ], $status),
+        ]);
+    }
+
+    protected function fakeClaudeConnectionFailure(): void
+    {
+        Http::fake([
+            'api.anthropic.com/*' => Http::failedConnection('cURL error 28: Operation timed out after 30000 milliseconds'),
+        ]);
+    }
+
+    /**
      * Queue a distinct response per call, for tests that send multiple chat
      * messages and need each one to get a different Claude reply. A plain
      * `Http::fake()` call does not replace earlier fakes for the same URL —

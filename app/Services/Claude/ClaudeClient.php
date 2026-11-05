@@ -31,13 +31,11 @@ class ClaudeClient
                     'tools' => $tools,
                 ]);
         } catch (Throwable $exception) {
-            throw new ClaudeRequestException('Tidak dapat menghubungi Claude API.', previous: $exception);
+            throw ClaudeRequestException::fromThrowable($exception);
         }
 
         if ($response->failed()) {
-            throw new ClaudeRequestException(
-                "Claude API mengembalikan status {$response->status()}: {$response->body()}"
-            );
+            throw ClaudeRequestException::fromResponse($response);
         }
 
         return ClaudeResponse::fromArray($response->json());

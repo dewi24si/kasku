@@ -25,7 +25,7 @@
         </div>
     </div>
 
-    <div class="border-t border-base-200 bg-base-100/95 px-4 py-3 backdrop-blur-xl md:px-6 lg:border-t-0 lg:bg-transparent lg:px-10 lg:pt-2 lg:pb-6 lg:backdrop-blur-none" x-data>
+    <div class="border-t border-base-200 bg-base-100/95 px-4 py-3 backdrop-blur-xl md:px-6 lg:border-t-0 lg:bg-transparent lg:px-10 lg:pt-2 lg:pb-6 lg:backdrop-blur-none" x-data="voiceInput">
         <div class="mx-auto w-full max-w-3xl lg:rounded-3xl lg:bg-base-100 lg:p-4 lg:shadow-sm lg:ring-1 lg:ring-base-300">
         @if ($photo)
             <div class="mb-2 flex items-center gap-2 rounded-2xl bg-base-200 p-2">
@@ -76,6 +76,25 @@
                 title="Lampirkan foto struk"
             >
                 <i data-lucide="camera" class="size-4"></i>
+            </button>
+
+            <button
+                type="button"
+                id="voice-input-button"
+                wire:ignore
+                x-show="supported"
+                style="display: none"
+                x-on:click="toggle()"
+                x-bind:class="recording ? 'btn-primary animate-pulse ring-4 ring-primary/20' : 'btn-ghost bg-base-200'"
+                x-bind:title="recording ? 'Berhenti merekam' : 'Bicara untuk mengisi pesan'"
+                x-bind:aria-label="recording ? 'Berhenti merekam' : 'Bicara untuk mengisi pesan'"
+                x-bind:aria-pressed="recording.toString()"
+                class="btn btn-circle shrink-0 border-none"
+                title="Bicara untuk mengisi pesan"
+                aria-label="Bicara untuk mengisi pesan"
+            >
+                <span x-show="!recording" class="flex"><i data-lucide="mic" class="size-4"></i></span>
+                <span x-show="recording" style="display: none" class="flex"><i data-lucide="square" class="size-3.5 fill-current"></i></span>
             </button>
 
             <input
