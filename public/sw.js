@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kasku-v16';
+const CACHE_NAME = 'kasku-v17';
 const OFFLINE_URL = '/offline.html';
 const PRECACHE_URLS = [OFFLINE_URL, '/manifest.json', '/icons/icon-192.png', '/icons/icon-512.png'];
 
