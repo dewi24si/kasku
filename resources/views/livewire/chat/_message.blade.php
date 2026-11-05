@@ -8,9 +8,7 @@
         @endunless
 
         <div class="flex flex-col gap-2 {{ $isUser ? 'items-end' : 'items-start' }}">
-            <div class="{{ $isUser ? 'bg-primary text-primary-content' : 'bg-base-100 ring-1 ring-base-300 text-base-content' }} animate-pop-in rounded-2xl px-4 py-2 text-sm whitespace-pre-line">
-                {{ $chatMessage->content }}
-            </div>
+            <div class="{{ $isUser ? 'bg-primary text-primary-content' : 'bg-base-100 ring-1 ring-base-300 text-base-content' }} animate-pop-in rounded-2xl px-4 py-2 text-sm whitespace-pre-line">{{ trim($chatMessage->content) }}</div>
 
             @if ($chatMessage->attachment)
                 @includeIf("livewire.chat.cards.{$chatMessage->attachment['type']}", ['attachment' => $chatMessage->attachment])
