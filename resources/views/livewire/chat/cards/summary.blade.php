@@ -1,4 +1,4 @@
-<div class="w-full max-w-xs rounded-2xl bg-base-100 p-3 shadow-sm ring-1 ring-base-300">
+<div class="w-full max-w-xs md:max-w-sm rounded-2xl bg-base-100 p-3 shadow-sm ring-1 ring-base-300">
     <p class="mb-2 text-xs font-medium text-base-content/50">{{ $attachment['period_label'] }}</p>
     <div class="grid grid-cols-3 gap-2 text-center">
         <div>

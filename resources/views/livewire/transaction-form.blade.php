@@ -1,7 +1,7 @@
 <div>
     @if ($showForm)
         <div class="fixed inset-0 z-40 flex items-end justify-center bg-black/40 backdrop-blur-sm sm:items-center" wire:click.self="close">
-            <div class="max-h-[90vh] w-full max-w-sm overflow-y-auto rounded-t-3xl bg-base-100 p-4 sm:rounded-3xl">
+            <div class="max-h-[90vh] w-full max-w-sm overflow-y-auto rounded-t-3xl bg-base-100 p-4 sm:rounded-3xl lg:max-w-lg lg:p-6 lg:shadow-xl">
                 <div class="mb-4 flex items-center justify-between">
                     <h2 class="text-lg font-semibold">
                         {{ $editingTransactionId ? 'Ubah' : 'Tambah' }} Transaksi

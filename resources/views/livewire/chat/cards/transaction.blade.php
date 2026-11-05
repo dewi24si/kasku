@@ -1,4 +1,4 @@
-<div class="w-full max-w-xs rounded-2xl bg-base-100 p-3 shadow-sm ring-1 ring-base-300">
+<div class="w-full max-w-xs md:max-w-sm rounded-2xl bg-base-100 p-3 shadow-sm ring-1 ring-base-300">
     @foreach ($attachment['transactions'] as $trx)
         <div class="flex flex-nowrap items-center gap-3 {{ ! $loop->last ? 'mb-2 border-b border-base-200 pb-2' : '' }}">
             <x-category-icon :icon="$trx['category']['icon'] ?? '💰'" :color="$trx['category']['color'] ?? '#64748b'" />

@@ -1,6 +1,6 @@
 @php $isUser = $chatMessage->role === App\ChatRole::User; @endphp
 <div class="flex {{ $isUser ? 'justify-end' : 'justify-start' }}">
-    <div class="flex max-w-[85%] items-start gap-2 {{ $isUser ? 'flex-row-reverse' : '' }}">
+    <div class="flex max-w-[85%] md:max-w-[75%] items-start gap-2 {{ $isUser ? 'flex-row-reverse' : '' }}">
         @unless ($isUser)
             <span class="flex size-8 shrink-0 items-center justify-center rounded-full bg-base-300 text-base-content/70">
                 <i data-lucide="bot" class="size-4"></i>

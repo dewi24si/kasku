@@ -1,24 +1,43 @@
-<div class="space-y-4">
-    <div class="flex items-center justify-between rounded-2xl bg-base-100 p-1.5 shadow-sm ring-1 ring-base-300">
-        <button type="button" wire:click="previousPeriod" class="btn btn-sm btn-circle border-none bg-base-200 text-base-content/70">
-            <i data-lucide="chevron-left" class="size-4"></i>
-        </button>
-        <p class="text-sm font-semibold">{{ $this->periodLabel }}</p>
-        <button type="button" wire:click="nextPeriod" class="btn btn-sm btn-circle border-none bg-base-200 text-base-content/70">
-            <i data-lucide="chevron-right" class="size-4"></i>
-        </button>
+<div class="space-y-4 lg:space-y-6">
+    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div class="hidden lg:block">
+            <h1 class="text-2xl font-bold tracking-tight">Budget</h1>
+            <p class="text-sm text-base-content/50">Batas pengeluaran per kategori di {{ $this->periodLabel }}</p>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <div class="flex flex-1 items-center justify-between rounded-2xl bg-base-100 p-1.5 shadow-sm ring-1 ring-base-300 lg:w-64 lg:flex-none">
+                <button type="button" wire:click="previousPeriod" class="btn btn-sm btn-circle border-none bg-base-200 text-base-content/70">
+                    <i data-lucide="chevron-left" class="size-4"></i>
+                </button>
+                <p class="text-sm font-semibold">{{ $this->periodLabel }}</p>
+                <button type="button" wire:click="nextPeriod" class="btn btn-sm btn-circle border-none bg-base-200 text-base-content/70">
+                    <i data-lucide="chevron-right" class="size-4"></i>
+                </button>
+            </div>
+
+            <button type="button" wire:click="openCreateForm" class="btn btn-primary hidden rounded-2xl border-none shadow-sm lg:inline-flex">
+                <i data-lucide="plus" class="size-4"></i>
+                Tambah Budget
+            </button>
+        </div>
     </div>
 
     @if ($this->budgets->isEmpty())
         <div class="flex flex-col items-center gap-2 rounded-3xl bg-base-100 py-12 text-center text-base-content/50 shadow-sm ring-1 ring-base-300">
             <i data-lucide="piggy-bank" class="size-10"></i>
             <p class="text-sm">Belum ada budget di {{ $this->periodLabel }}.</p>
-            <p class="text-xs">Tambahkan lewat tombol di bawah, atau minta lewat chat.</p>
+            <p class="text-xs">
+                Tambahkan lewat tombol
+                <span class="lg:hidden">di bawah,</span>
+                <span class="hidden lg:inline">Tambah Budget di atas,</span>
+                atau minta lewat chat.
+            </p>
         </div>
     @else
-        <div class="space-y-3">
+        <div class="grid gap-3 md:grid-cols-2 lg:grid-cols-3 lg:gap-4">
             @foreach ($this->budgets as $budget)
-                <div class="card bg-base-100 shadow-sm ring-1 ring-base-300">
+                <div class="card min-w-0 bg-base-100 shadow-sm ring-1 ring-base-300">
                     <div class="card-body gap-3">
                         <div class="flex items-center justify-between gap-2">
                             <div class="flex min-w-0 flex-1 items-center gap-2">
@@ -66,14 +85,14 @@
         </div>
     @endif
 
-    <button type="button" wire:click="openCreateForm" class="btn btn-primary w-full border-none">
+    <button type="button" wire:click="openCreateForm" class="btn btn-primary w-full border-none lg:hidden">
         <i data-lucide="plus" class="size-4"></i>
         Tambah Budget
     </button>
 
     @if ($showForm)
         <div class="fixed inset-0 z-40 flex items-end justify-center bg-black/40 backdrop-blur-sm sm:items-center" wire:click.self="closeForm">
-            <div class="w-full max-w-sm rounded-t-3xl bg-base-100 p-4 sm:rounded-3xl">
+            <div class="w-full max-w-sm rounded-t-3xl bg-base-100 p-4 sm:rounded-3xl lg:max-w-md lg:p-6 lg:shadow-xl">
                 <h2 class="mb-4 text-lg font-semibold">
                     {{ $editingBudgetId ? 'Ubah' : 'Tambah' }} Budget
                 </h2>

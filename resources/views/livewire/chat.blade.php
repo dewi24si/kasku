@@ -1,15 +1,16 @@
-<div class="-mx-4 -mt-6 -mb-24 flex h-[calc(100dvh-8.5rem)] flex-col">
+<div class="-mx-4 -mt-6 -mb-24 flex h-[calc(100dvh-8.5rem)] flex-col md:-mx-6 lg:-mx-10 lg:-my-10 lg:h-dvh">
     <div
         id="chat-scroll"
-        class="flex-1 space-y-3 overflow-y-auto px-4 py-4"
+        class="flex-1 overflow-y-auto px-4 py-4 md:px-6 lg:px-10 lg:pt-10"
         x-data
         x-init="$el.scrollTop = $el.scrollHeight"
         x-on:chat-message-added.window="setTimeout(() => $el.scrollTop = $el.scrollHeight, 50)"
     >
+        <div class="mx-auto flex min-h-full w-full max-w-3xl flex-col space-y-3">
         @forelse ($this->messages as $chatMessage)
             @include('livewire.chat._message', ['chatMessage' => $chatMessage])
         @empty
-            <div class="flex h-full flex-col items-center justify-center gap-2 text-center text-base-content/50">
+            <div class="flex flex-1 flex-col items-center justify-center gap-2 text-center text-base-content/50">
                 <i data-lucide="bot" class="size-10"></i>
                 <p class="text-sm">Mulai chat untuk mencatat transaksi atau tanya keuanganmu.</p>
                 <p class="text-xs">Contoh: "catat makan siang 25000" atau kirim foto struk</p>
@@ -21,9 +22,11 @@
             <i data-lucide="loader-2" class="size-4 animate-spin"></i>
             AI sedang mengetik...
         </div>
+        </div>
     </div>
 
-    <div class="border-t border-base-200 bg-base-100/95 px-4 py-3 backdrop-blur-xl" x-data>
+    <div class="border-t border-base-200 bg-base-100/95 px-4 py-3 backdrop-blur-xl md:px-6 lg:border-t-0 lg:bg-transparent lg:px-10 lg:pt-2 lg:pb-6 lg:backdrop-blur-none" x-data>
+        <div class="mx-auto w-full max-w-3xl lg:rounded-3xl lg:bg-base-100 lg:p-4 lg:shadow-sm lg:ring-1 lg:ring-base-300">
         @if ($photo)
             <div class="mb-2 flex items-center gap-2 rounded-2xl bg-base-200 p-2">
                 <img src="{{ $photo->temporaryUrl() }}" alt="Pratinjau foto" class="size-12 rounded-xl object-cover">
@@ -40,7 +43,7 @@
         </div>
 
         @unless ($photo)
-        <div class="-mx-4 mb-2 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]" wire:loading.class="pointer-events-none opacity-50" wire:target="sendMessage,sendSuggestion">
+        <div class="-mx-4 mb-2 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] md:-mx-6 md:px-6 lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0" wire:loading.class="pointer-events-none opacity-50" wire:target="sendMessage,sendSuggestion">
             @foreach (\App\Livewire\Chat::SUGGESTIONS as $key => $suggestion)
                 <button
                     type="button"
@@ -102,5 +105,6 @@
         @error('photo')
             <p class="pt-2 text-xs text-error">{{ $message }}</p>
         @enderror
+        </div>
     </div>
 </div>

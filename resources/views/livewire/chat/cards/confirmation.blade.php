@@ -1,6 +1,6 @@
 @php $log = App\Models\AiFunctionLog::where('user_id', auth()->id())->find($attachment['log_id']); @endphp
 @if ($log)
-    <div class="w-full max-w-xs rounded-2xl bg-base-100 p-3 shadow-sm ring-1 ring-base-300">
+    <div class="w-full max-w-xs md:max-w-sm rounded-2xl bg-base-100 p-3 shadow-sm ring-1 ring-base-300">
         @if (! empty($attachment['preview']['before']))
             <div class="mb-2 text-xs text-base-content/60">
                 {{ $attachment['preview']['before']['category']['name'] ?? '' }}

@@ -1,4 +1,9 @@
-<div class="space-y-4">
+<div class="space-y-4 lg:space-y-6">
+    <div class="hidden lg:block">
+        <h1 class="text-2xl font-bold tracking-tight">Profil</h1>
+        <p class="text-sm text-base-content/50">Kelola akun, tampilan, dan kategorimu</p>
+    </div>
+
     <div
         class="card bg-base-100 shadow-sm ring-1 ring-base-300"
         x-data="{
@@ -26,13 +31,13 @@
             },
         }"
     >
-        <div class="card-body gap-3">
+        <div class="card-body gap-3 lg:flex-row lg:items-center lg:justify-between">
             <p class="flex items-center gap-2 text-sm font-semibold">
                 <i data-lucide="sun-moon" class="size-4"></i>
                 Tampilan
             </p>
 
-            <div class="grid grid-cols-3 gap-2">
+            <div class="grid grid-cols-3 gap-2 lg:w-96">
                 <button
                     type="button"
                     @click="setTheme('light')"
@@ -61,6 +66,8 @@
         </div>
     </div>
 
+    <div class="space-y-4 lg:grid lg:grid-cols-2 lg:items-start lg:gap-6 lg:space-y-0">
+    <div class="space-y-4 lg:space-y-6">
     <div class="card bg-base-100 shadow-sm ring-1 ring-base-300">
         <div class="card-body gap-3">
             <div class="flex items-center gap-3">
@@ -128,6 +135,7 @@
             </form>
         </div>
     </div>
+    </div>
 
     <div class="card bg-base-100 shadow-sm ring-1 ring-base-300">
         <div class="card-body gap-3">
@@ -167,10 +175,11 @@
             @endif
         </div>
     </div>
+    </div>
 
     @if ($showCategoryForm)
         <div class="fixed inset-0 z-40 flex items-end justify-center bg-black/40 backdrop-blur-sm sm:items-center" wire:click.self="closeCategoryForm">
-            <div class="w-full max-w-sm rounded-t-3xl bg-base-100 p-4 sm:rounded-3xl">
+            <div class="w-full max-w-sm rounded-t-3xl bg-base-100 p-4 sm:rounded-3xl lg:max-w-md lg:p-6 lg:shadow-xl">
                 <h2 class="mb-4 text-lg font-semibold">Tambah Kategori</h2>
 
                 <form wire:submit="addCategory" class="space-y-4">

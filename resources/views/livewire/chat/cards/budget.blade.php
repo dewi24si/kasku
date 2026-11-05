@@ -1,4 +1,4 @@
-<div class="w-full max-w-xs rounded-2xl bg-base-100 p-3 shadow-sm ring-1 ring-base-300">
+<div class="w-full max-w-xs md:max-w-sm rounded-2xl bg-base-100 p-3 shadow-sm ring-1 ring-base-300">
     @forelse ($attachment['budgets'] as $budget)
         <div class="mb-3 last:mb-0">
             <div class="flex items-center justify-between gap-2 text-sm">

@@ -1,10 +1,10 @@
-<div class="w-full max-w-xs rounded-xl bg-base-100 p-3 shadow-sm ring-1 ring-base-300">
+<div class="w-full max-w-xs md:max-w-md rounded-xl bg-base-100 p-3 shadow-sm ring-1 ring-base-300">
     <p class="mb-2 text-xs font-medium text-base-content/50">{{ $attachment['title'] }}</p>
 
     @if (empty($attachment['labels']))
         <p class="text-sm text-base-content/50">Belum ada data.</p>
     @else
-        <div wire:ignore class="relative h-48">
+        <div wire:ignore class="relative h-48 md:h-60">
             <canvas data-chart="{{ json_encode([
                 'type' => $attachment['chart_type'],
                 'data' => [
