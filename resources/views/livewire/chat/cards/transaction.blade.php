@@ -1,5 +1,5 @@
 @php
-    $formatRupiah = fn (int $amount): string => 'Rp'.number_format(abs($amount), 0, ',', '.');
+    $formatRupiah = fn (int $amount): string => \App\Services\Format\Rupiah::format(abs($amount));
     $receiptLabel = match ($attachment['action'] ?? 'created') {
         'updated' => 'Diubah',
         'deleted' => 'Dihapus',

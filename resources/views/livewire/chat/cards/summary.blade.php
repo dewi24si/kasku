@@ -1,9 +1,9 @@
-@php $formatRupiah = fn (int $amount): string => ($amount < 0 ? '-' : '').'Rp'.number_format(abs($amount), 0, ',', '.'); @endphp
+@php $formatRupiah = fn (int $amount): string => \App\Services\Format\Rupiah::format($amount); @endphp
 
 <div class="w-full max-w-xs rounded-box border border-base-300 bg-base-100 p-4 md:max-w-sm">
     <div class="mb-3 flex items-center justify-between gap-2">
         <p class="label-struk">Ringkasan &middot; {{ $attachment['period_label'] }}</p>
-        <i data-lucide="chart-pie" class="size-4 shrink-0 text-neutral"></i>
+        <i data-lucide="wallet" class="size-4 shrink-0 text-neutral"></i>
     </div>
 
     <dl class="space-y-1.5 text-sm">
@@ -26,7 +26,7 @@
 
     @if (! empty($attachment['breakdown']))
         <div class="mt-3 space-y-1.5 border-t border-base-300 pt-3">
-            <p class="label-struk mb-1">Per kategori</p>
+            <p class="label-struk mb-1">Pengeluaran per kategori</p>
             @foreach ($attachment['breakdown'] as $row)
                 <div class="flex items-baseline gap-2 text-xs">
                     <span class="truncate">{{ $row['category'] }}</span>

@@ -26,7 +26,7 @@
                     <span class="text-neutral">dari</span>
                     <span class="rupiah text-neutral">Rp{{ number_format($budget['amount'], 0, ',', '.') }}</span>
                     <x-ledger-leader />
-                    <span class="font-medium tabular-nums">{{ $budget['percentage'] }}%</span>
+                    <span class="font-medium tabular-nums">{{ str_replace('.', ',', (string) $budget['percentage']) }}%</span>
                 </div>
             @else
                 <div class="mt-1 flex items-baseline gap-2 text-xs">

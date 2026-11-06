@@ -212,6 +212,52 @@ class ChatSendMessageTest extends TestCase
         $this->assertSame(150000, $log->result['saldo']);
     }
 
+    public function test_ringkasan_breakdown_only_lists_expense_categories(): void
+    {
+        $user = User::factory()->create();
+        $food = Category::factory()->create(['user_id' => $user->id, 'name' => 'Makan', 'type' => TransactionType::Pengeluaran]);
+        $transport = Category::factory()->create(['user_id' => $user->id, 'name' => 'Transport', 'type' => TransactionType::Pengeluaran]);
+        $salary = Category::factory()->create(['user_id' => $user->id, 'name' => 'Uang Saku', 'type' => TransactionType::Pemasukan]);
+
+        Transaction::factory()->create(['user_id' => $user->id, 'category_id' => $salary->id, 'type' => TransactionType::Pemasukan, 'amount' => 3_000_000, 'transaction_date' => '2026-11-01']);
+        Transaction::factory()->create(['user_id' => $user->id, 'category_id' => $food->id, 'type' => TransactionType::Pengeluaran, 'amount' => 75_000, 'transaction_date' => '2026-11-02']);
+        Transaction::factory()->create(['user_id' => $user->id, 'category_id' => $transport->id, 'type' => TransactionType::Pengeluaran, 'amount' => 25_000, 'transaction_date' => '2026-11-03']);
+
+        $this->fakeClaudeToolUse('ringkasan', ['period' => '2026-11']);
+
+        Livewire::actingAs($user)->test(Chat::class)
+            ->set('message', 'ringkasan bulan ini')
+            ->call('sendMessage');
+
+        $attachment = ChatMessage::query()->where('user_id', $user->id)->where('role', 'assistant')->latest('id')->value('attachment');
+
+        $this->assertSame(3_000_000, $attachment['total_pemasukan']);
+        $this->assertSame(['Makan', 'Transport'], array_column($attachment['breakdown'], 'category'));
+        $this->assertEquals([75, 25], array_column($attachment['breakdown'], 'percentage'));
+        $this->assertSame(['pengeluaran'], array_values(array_unique(array_column($attachment['breakdown'], 'type'))));
+    }
+
+    public function test_ringkasan_message_formats_negative_balance_with_minus_before_rp(): void
+    {
+        $user = User::factory()->create();
+        $expenseCategory = Category::factory()->create(['user_id' => $user->id, 'type' => TransactionType::Pengeluaran]);
+        $incomeCategory = Category::factory()->create(['user_id' => $user->id, 'type' => TransactionType::Pemasukan]);
+
+        Transaction::factory()->create(['user_id' => $user->id, 'category_id' => $expenseCategory->id, 'type' => TransactionType::Pengeluaran, 'amount' => 70000, 'transaction_date' => '2026-11-05']);
+        Transaction::factory()->create(['user_id' => $user->id, 'category_id' => $incomeCategory->id, 'type' => TransactionType::Pemasukan, 'amount' => 50000, 'transaction_date' => '2026-11-04']);
+
+        $this->fakeClaudeToolUse('ringkasan', ['period' => '2026-11']);
+
+        Livewire::actingAs($user)->test(Chat::class)
+            ->set('message', 'ringkasan bulan ini')
+            ->call('sendMessage');
+
+        $reply = ChatMessage::query()->where('user_id', $user->id)->where('role', 'assistant')->latest('id')->value('content');
+
+        $this->assertStringContainsString('saldo -Rp20.000', $reply);
+        $this->assertStringNotContainsString('Rp-', $reply);
+    }
+
     public function test_cari_transaksi_only_returns_own_transactions(): void
     {
         $user = User::factory()->create();

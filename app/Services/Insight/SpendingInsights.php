@@ -6,6 +6,7 @@ use App\Models\Budget;
 use App\Models\Category;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Services\Format\Rupiah;
 use App\TransactionType;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
@@ -30,7 +31,18 @@ class SpendingInsights
     /**
      * Minimum elapsed days in the month before projecting month-end spending.
      */
-    public const PROJECTION_MINIMUM_DAYS = 5;
+    public const PROJECTION_MINIMUM_DAYS = 7;
+
+    /**
+     * An expense this many times the month's median expense counts as a one-off (rent, a big purchase)
+     * and is added once to the projection instead of being averaged per day.
+     */
+    public const ONE_OFF_MEDIAN_MULTIPLIER = 10;
+
+    /**
+     * Minimum number of expenses this month before one-offs are separated, so a lone transaction is never singled out.
+     */
+    public const ONE_OFF_MINIMUM_TRANSACTIONS = 5;
 
     /**
      * @return list<array{tone: 'warning'|'success'|'info', icon: string, message: string}>
@@ -173,7 +185,9 @@ class SpendingInsights
             return null;
         }
 
-        $projected = (int) round($totals['pengeluaran'] / $elapsedDays * $today->daysInMonth);
+        $oneOffTotal = $this->oneOffExpenseTotal($user, $monthStart, $today->copy()->endOfDay());
+        $dailyAverage = ($totals['pengeluaran'] - $oneOffTotal) / $elapsedDays;
+        $projected = (int) round($oneOffTotal + $dailyAverage * $today->daysInMonth);
 
         if ($totals['pemasukan'] > 0 && $projected > $totals['pemasukan']) {
             return [
@@ -184,12 +198,37 @@ class SpendingInsights
             ];
         }
 
+        $oneOffNote = $oneOffTotal > 0
+            ? ' (sudah termasuk pengeluaran besar sekali bayar '.$this->formatRupiah($oneOffTotal).')'
+            : '';
+
         return [
             'tone' => 'info',
             'icon' => 'calendar-clock',
-            'message' => 'Rata-rata pengeluaranmu '.$this->formatRupiah((int) round($totals['pengeluaran'] / $elapsedDays))
-                .'/hari. Perkiraan total akhir bulan: '.$this->formatRupiah($projected).'.',
+            'message' => 'Rata-rata pengeluaranmu '.$this->formatRupiah((int) round($dailyAverage))
+                .'/hari. Perkiraan total akhir bulan: '.$this->formatRupiah($projected).$oneOffNote.'.',
         ];
+    }
+
+    /**
+     * Total of this month's one-off expenses: each at least ONE_OFF_MEDIAN_MULTIPLIER times the median expense.
+     */
+    private function oneOffExpenseTotal(User $user, CarbonInterface $from, CarbonInterface $to): int
+    {
+        $amounts = Transaction::query()
+            ->where('user_id', $user->id)
+            ->where('type', TransactionType::Pengeluaran)
+            ->whereBetween('transaction_date', [$from->toDateString(), $to->toDateString()])
+            ->pluck('amount')
+            ->map(fn (mixed $amount): int => (int) $amount);
+
+        if ($amounts->count() < self::ONE_OFF_MINIMUM_TRANSACTIONS) {
+            return 0;
+        }
+
+        $threshold = $amounts->median() * self::ONE_OFF_MEDIAN_MULTIPLIER;
+
+        return (int) $amounts->filter(fn (int $amount): bool => $amount >= $threshold)->sum();
     }
 
     /**
@@ -251,6 +290,6 @@ class SpendingInsights
 
     private function formatRupiah(int $amount): string
     {
-        return 'Rp'.number_format($amount, 0, ',', '.');
+        return Rupiah::format($amount);
     }
 }

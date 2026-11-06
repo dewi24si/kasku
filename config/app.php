@@ -68,6 +68,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Demo Account
+    |--------------------------------------------------------------------------
+    |
+    | Password for demo@kasku.test, used by DemoSeeder for the seminar demo.
+    | Leave DEMO_PASSWORD empty to let the seeder generate a random one.
+    |
+    */
+
+    'demo_password' => env('DEMO_PASSWORD'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

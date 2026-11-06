@@ -124,6 +124,53 @@ class SpendingInsightsTest extends TestCase
         $this->assertStringNotContainsString('Rata-rata', $this->messages($this->insightsOn('2026-11-03')));
     }
 
+    public function test_skips_projection_before_seventh_day_and_shows_it_from_seventh_day(): void
+    {
+        $this->record($this->food, 20_000, '2026-11-02');
+        $this->record($this->food, 20_000, '2026-11-04');
+
+        $onSixthDay = $this->messages($this->insightsOn('2026-11-06'));
+        $onSeventhDay = $this->messages($this->insightsOn('2026-11-07'));
+
+        $this->assertStringNotContainsString('Rata-rata', $onSixthDay);
+        $this->assertStringNotContainsString('diperkirakan', $onSixthDay);
+        $this->assertStringContainsString('Rata-rata pengeluaranmu', $onSeventhDay);
+    }
+
+    public function test_one_off_expense_like_rent_is_not_averaged_per_day(): void
+    {
+        $bills = Category::factory()->create(['user_id' => $this->user->id, 'name' => 'Tagihan', 'type' => TransactionType::Pengeluaran]);
+        $this->record($this->salary, 3_000_000, '2026-11-01');
+        $this->record($bills, 800_000, '2026-11-01');
+
+        foreach (range(1, 9) as $day) {
+            $this->record($this->food, 20_000, sprintf('2026-11-%02d', $day));
+        }
+
+        $messages = $this->messages($this->insightsOn('2026-11-10'));
+
+        $this->assertStringContainsString(
+            'Rata-rata pengeluaranmu Rp18.000/hari. Perkiraan total akhir bulan: Rp1.340.000 (sudah termasuk pengeluaran besar sekali bayar Rp800.000).',
+            $messages,
+        );
+        $this->assertStringNotContainsString('Rp2.940.000', $messages);
+    }
+
+    public function test_one_off_expense_still_counts_once_when_projection_exceeds_income(): void
+    {
+        $bills = Category::factory()->create(['user_id' => $this->user->id, 'name' => 'Tagihan', 'type' => TransactionType::Pengeluaran]);
+        $this->record($this->salary, 1_000_000, '2026-11-01');
+        $this->record($bills, 800_000, '2026-11-01');
+
+        foreach (range(1, 9) as $day) {
+            $this->record($this->food, 20_000, sprintf('2026-11-%02d', $day));
+        }
+
+        $messages = $this->messages($this->insightsOn('2026-11-10'));
+
+        $this->assertStringContainsString('diperkirakan Rp1.340.000, melebihi pemasukanmu Rp1.000.000', $messages);
+    }
+
     public function test_reports_top_category_share(): void
     {
         $this->record($this->food, 300_000, '2026-11-02');

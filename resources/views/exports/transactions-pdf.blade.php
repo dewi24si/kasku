@@ -1,5 +1,5 @@
 @php
-    $rupiah = fn (int $amount): string => 'Rp'.number_format($amount, 0, ',', '.');
+    $rupiah = fn (int $amount): string => \App\Services\Format\Rupiah::format($amount);
     $fontUrl = fn (string $file): string => 'file://'.str_replace(DIRECTORY_SEPARATOR, '/', resource_path('fonts/'.$file));
 @endphp
 <!DOCTYPE html>
@@ -79,7 +79,7 @@
             <td>
                 <div class="label">SALDO</div>
                 <div class="value {{ $summary['saldo'] < 0 ? 'expense' : '' }}">
-                    {{ $summary['saldo'] < 0 ? '-' : '' }}{{ $rupiah(abs($summary['saldo'])) }}
+                    {{ $rupiah($summary['saldo']) }}
                 </div>
             </td>
         </tr>

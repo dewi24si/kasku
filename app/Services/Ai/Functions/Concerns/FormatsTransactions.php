@@ -3,6 +3,7 @@
 namespace App\Services\Ai\Functions\Concerns;
 
 use App\Models\Transaction;
+use App\Services\Format\Rupiah;
 
 trait FormatsTransactions
 {
@@ -28,6 +29,6 @@ trait FormatsTransactions
 
     protected function formatRupiah(int $amount): string
     {
-        return 'Rp'.number_format($amount, 0, ',', '.');
+        return Rupiah::format($amount);
     }
 }

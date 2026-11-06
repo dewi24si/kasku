@@ -25,7 +25,21 @@
             </select>
         </div>
 
-        <input type="month" wire:model.live="period" class="input input-sm w-full lg:w-40" aria-label="Filter bulan">
+        @php
+            $monthOptions = collect(range(0, 23))
+                ->map(fn (int $monthsAgo) => now()->startOfMonth()->subMonths($monthsAgo))
+                ->mapWithKeys(fn ($month) => [$month->format('Y-m') => $month->translatedFormat('F Y')]);
+
+            if ($period !== '' && ! $monthOptions->has($period) && preg_match('/^\d{4}-\d{2}$/', $period)) {
+                $monthOptions->put($period, \Illuminate\Support\Carbon::createFromFormat('Y-m-d', $period.'-01')->translatedFormat('F Y'));
+            }
+        @endphp
+        <select wire:model.live="period" class="select select-sm w-full lg:w-44" aria-label="Filter bulan">
+            <option value="">Semua periode</option>
+            @foreach ($monthOptions as $monthValue => $monthLabel)
+                <option value="{{ $monthValue }}">{{ $monthLabel }}</option>
+            @endforeach
+        </select>
 
         @php
             $exportFilters = array_filter(['search' => $search, 'type' => $type, 'category_id' => $categoryId, 'period' => $period], 'filled');
@@ -95,9 +109,9 @@
                                     <x-category-icon :icon="$transaction->category?->icon" />
                                     <div class="min-w-0 flex-1">
                                         <div class="flex items-baseline gap-2">
-                                            <p class="truncate text-sm font-medium">{{ $transaction->description ?: $transaction->category->name }}</p>
+                                            <p class="grow-0 truncate text-sm font-medium">{{ $transaction->description ?: $transaction->category->name }}</p>
                                             <x-ledger-leader />
-                                            <p class="rupiah shrink-0 text-sm {{ $isExpense ? 'text-error' : 'text-success' }}">
+                                            <p class="rupiah shrink-0 grow-0 text-sm {{ $isExpense ? 'text-error' : 'text-success' }}">
                                                 {{ $isExpense ? '-' : '+' }}Rp{{ number_format($transaction->amount, 0, ',', '.') }}
                                             </p>
                                         </div>

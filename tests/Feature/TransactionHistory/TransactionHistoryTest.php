@@ -115,6 +115,28 @@ class TransactionHistoryTest extends TestCase
         $this->assertSame(1, $component->get('transactions')->total());
     }
 
+    public function test_period_filter_shows_readable_label_when_empty(): void
+    {
+        $this->travelTo('2026-11-06 10:00:00');
+        $user = User::factory()->create();
+
+        Livewire::actingAs($user)->test(TransactionHistory::class)
+            ->assertSeeHtml('<option value="">Semua periode</option>')
+            ->assertSeeHtml('<option value="2026-11">November 2026</option>')
+            ->assertSeeHtml('<option value="2024-12">Desember 2024</option>')
+            ->assertDontSeeHtml('type="month"');
+    }
+
+    public function test_period_filter_keeps_older_period_from_url_as_option(): void
+    {
+        $this->travelTo('2026-11-06 10:00:00');
+        $user = User::factory()->create();
+
+        Livewire::actingAs($user)->withQueryParams(['period' => '2023-03'])->test(TransactionHistory::class)
+            ->assertSet('period', '2023-03')
+            ->assertSeeHtml('<option value="2023-03">Maret 2023</option>');
+    }
+
     public function test_pagination_shows_fifteen_per_page(): void
     {
         $user = User::factory()->create();

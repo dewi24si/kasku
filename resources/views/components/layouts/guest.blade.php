@@ -39,7 +39,7 @@
                 </li>
                 <li class="flex items-center gap-3">
                     <span class="flex size-8 items-center justify-center rounded-field border border-base-300 bg-base-100 text-base-content">
-                        <i data-lucide="chart-pie" class="size-4"></i>
+                        <i data-lucide="chart-bar-decreasing" class="size-4"></i>
                     </span>
                     Lihat ringkasan dan grafik pengeluaran
                 </li>

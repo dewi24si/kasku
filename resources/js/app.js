@@ -7,7 +7,7 @@ import {
     Briefcase,
     Camera,
     Car,
-    ChartPie,
+    ChartBarDecreasing,
     CalendarClock,
     Check,
     ChevronLeft,
@@ -52,9 +52,6 @@ import {
     Wallet,
     X,
 } from 'lucide';
-import Chart from 'chart.js/auto';
-
-Chart.defaults.font.family = "'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif";
 
 const icons = {
     ArrowDownRight,
@@ -65,7 +62,7 @@ const icons = {
     Briefcase,
     Camera,
     Car,
-    ChartPie,
+    ChartBarDecreasing,
     CalendarClock,
     Check,
     ChevronLeft,
@@ -110,98 +107,8 @@ const icons = {
     X,
 };
 
-const chartInstances = new Map();
-
-function isDarkMode() {
-    const explicit = document.documentElement.getAttribute('data-theme');
-
-    if (explicit === 'kasku-dark') {
-        return true;
-    }
-
-    if (explicit === 'kasku') {
-        return false;
-    }
-
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
-}
-
-/**
- * Palet grafik gaya Buku Kas: gradasi dari warna aksen emerald ke abu-abu.
- * Warna per kategori dari database sengaja tidak dipakai supaya hanya ada satu warna aksen.
- */
-const chartPalettes = {
-    light: ['#0f7b5f', '#3d957b', '#6fb19b', '#a3cdbd', '#5f6368', '#85898e', '#adb0b4', '#d3d5d7'],
-    dark: ['#3dd6a3', '#2fae86', '#25876a', '#1c624f', '#9aa0a6', '#7b8187', '#5e6368', '#43474c'],
-};
-
-function chartThemeColors() {
-    const dark = isDarkMode();
-
-    return {
-        legend: dark ? '#eceae4' : '#16181d',
-        border: dark ? '#1a1d20' : '#ffffff',
-        palette: dark ? chartPalettes.dark : chartPalettes.light,
-    };
-}
-
-function paletteColor(palette, index) {
-    return palette[index % palette.length];
-}
-
-function applyDatasetColors(datasets, { border, palette }) {
-    datasets.forEach((dataset, datasetIndex) => {
-        dataset.backgroundColor =
-            datasets.length === 1
-                ? (dataset.data ?? []).map((_, index) => paletteColor(palette, index))
-                : paletteColor(palette, datasetIndex);
-        dataset.borderColor = border;
-        dataset.borderWidth = 2;
-    });
-}
-
-function applyChartTheme(config) {
-    const theme = chartThemeColors();
-
-    config.options = config.options ?? {};
-    config.options.plugins = config.options.plugins ?? {};
-    config.options.plugins.legend = config.options.plugins.legend ?? {};
-    config.options.plugins.legend.labels = config.options.plugins.legend.labels ?? {};
-    config.options.plugins.legend.labels.color = theme.legend;
-
-    applyDatasetColors(config.data.datasets ?? [], theme);
-
-    return config;
-}
-
-function initCharts() {
-    document.querySelectorAll('canvas[data-chart]').forEach((canvas) => {
-        const configJson = canvas.dataset.chart;
-
-        if (canvas.dataset.chartConfig === configJson) {
-            return;
-        }
-
-        const config = applyChartTheme(JSON.parse(configJson));
-        chartInstances.get(canvas)?.destroy();
-        chartInstances.set(canvas, new Chart(canvas, config));
-        canvas.dataset.chartConfig = configJson;
-    });
-}
-
-function refreshChartsTheme() {
-    const theme = chartThemeColors();
-
-    chartInstances.forEach((chart) => {
-        chart.options.plugins.legend.labels.color = theme.legend;
-        applyDatasetColors(chart.data.datasets, theme);
-        chart.update();
-    });
-}
-
 function refreshPage() {
     createIcons({ icons });
-    initCharts();
 }
 
 refreshPage();
@@ -308,12 +215,6 @@ document.addEventListener('alpine:init', () => {
     window.Alpine.data('voiceInput', voiceInput);
 });
 
-window.addEventListener('kasku-theme-changed', refreshChartsTheme);
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-    if (!document.documentElement.getAttribute('data-theme')) {
-        refreshChartsTheme();
-    }
-});
 
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {

@@ -47,17 +47,16 @@ class RingkasanFunction implements AiFunction
         $saldo = $totalPemasukan - $totalPengeluaran;
 
         $breakdown = $transactions
+            ->where('type', TransactionType::Pengeluaran)
             ->groupBy('category_id')
-            ->map(function ($group) use ($totalPemasukan, $totalPengeluaran) {
-                $first = $group->first();
+            ->map(function ($group) use ($totalPengeluaran) {
                 $total = (int) $group->sum('amount');
-                $base = $first->type === TransactionType::Pemasukan ? $totalPemasukan : $totalPengeluaran;
 
                 return [
-                    'category' => $first->category->name,
-                    'type' => $first->type->value,
+                    'category' => $group->first()->category->name,
+                    'type' => TransactionType::Pengeluaran->value,
                     'total' => $total,
-                    'percentage' => $base > 0 ? round(($total / $base) * 100, 1) : 0.0,
+                    'percentage' => $totalPengeluaran > 0 ? round(($total / $totalPengeluaran) * 100, 1) : 0.0,
                 ];
             })
             ->sortByDesc('total')

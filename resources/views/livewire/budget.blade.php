@@ -67,7 +67,7 @@
                                 'border-warning/50 text-warning' => $isWarning,
                                 'border-success/50 text-success' => ! $isWarning,
                             ])>{{ $isWarning ? 'Hampir habis' : 'Aman' }}</span>
-                            <span class="rupiah text-sm">{{ $budget['percentage'] }}%</span>
+                            <span class="rupiah text-sm">{{ str_replace('.', ',', (string) $budget['percentage']) }}%</span>
                         </div>
 
                         <progress

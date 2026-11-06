@@ -1,6 +1,6 @@
 <div class="space-y-4 lg:space-y-6">
     @php
-        $formatRupiah = fn (int $amount): string => ($amount < 0 ? '-' : '').'Rp'.number_format(abs($amount), 0, ',', '.');
+        $formatRupiah = fn (int $amount): string => \App\Services\Format\Rupiah::format($amount);
     @endphp
 
     <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -79,7 +79,7 @@
             @if (empty($this->insights))
                 <p class="text-sm text-neutral">Belum cukup data untuk insight. Catat transaksimu beberapa hari, nanti Kasku kasih analisis singkat di sini.</p>
             @else
-                <ul class="space-y-2 md:grid md:grid-cols-2 md:gap-3 md:space-y-0">
+                <ul class="space-y-2">
                     @foreach ($this->insights as $insight)
                         <li @class([
                             'flex items-start gap-2.5 rounded-field border p-3 text-sm',
@@ -123,35 +123,12 @@
         <div class="grid gap-4 lg:grid-cols-5 lg:gap-6">
             <section class="card min-w-0 border border-base-300 bg-base-100 lg:col-span-3">
                 <div class="card-body">
-                    <h2 class="label-struk mb-2">Pengeluaran per Kategori</h2>
+                    <h2 class="label-struk mb-4">Pengeluaran per Kategori</h2>
 
                     @if (empty($this->expenseChart['labels']))
                         <p class="text-sm text-neutral">Belum ada pengeluaran bulan ini.</p>
                     @else
-                        <div wire:ignore wire:key="expense-chart-{{ md5(json_encode($this->expenseChart)) }}" class="relative isolate h-72 overflow-hidden lg:h-96">
-                            <canvas data-chart="{{ json_encode([
-                                'type' => 'pie',
-                                'data' => [
-                                    'labels' => $this->expenseChart['labels'],
-                                    'datasets' => [[
-                                        'data' => $this->expenseChart['data'],
-                                    ]],
-                                ],
-                                'options' => [
-                                    'maintainAspectRatio' => false,
-                                    'plugins' => [
-                                        'legend' => [
-                                            'position' => 'bottom',
-                                            'labels' => [
-                                                'usePointStyle' => true,
-                                                'boxWidth' => 8,
-                                                'padding' => 12,
-                                            ],
-                                        ],
-                                    ],
-                                ],
-                            ]) }}"></canvas>
-                        </div>
+                        <x-category-bars :labels="$this->expenseChart['labels']" :totals="$this->expenseChart['data']" />
                     @endif
                 </div>
             </section>
@@ -178,9 +155,9 @@
                                 <x-category-icon :icon="$transaction->category?->icon" />
                                 <div class="min-w-0 flex-1">
                                     <div class="flex items-baseline gap-2">
-                                        <p class="truncate text-sm font-medium">{{ $transaction->description ?: $transaction->category->name }}</p>
+                                        <p class="grow-0 truncate text-sm font-medium">{{ $transaction->description ?: $transaction->category->name }}</p>
                                         <x-ledger-leader />
-                                        <p class="rupiah shrink-0 text-sm {{ $isExpense ? 'text-error' : 'text-success' }}">
+                                        <p class="rupiah shrink-0 grow-0 text-sm {{ $isExpense ? 'text-error' : 'text-success' }}">
                                             {{ $isExpense ? '-' : '+' }}{{ $formatRupiah($transaction->amount) }}
                                         </p>
                                     </div>
