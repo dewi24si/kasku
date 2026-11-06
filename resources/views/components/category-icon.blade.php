@@ -1,25 +1,9 @@
-@props(['icon' => '💰', 'color' => '#64748b'])
+@props(['icon' => null, 'color' => null])
 
-@php
-    $lucideIcon = match ($icon) {
-        '🍔' => 'utensils',
-        '🚗' => 'car',
-        '🛍️' => 'shopping-bag',
-        '🧾' => 'receipt',
-        '🎮' => 'gamepad-2',
-        '🏥' => 'heart-pulse',
-        '📚' => 'book-open',
-        '📦' => 'package',
-        '💼' => 'briefcase',
-        '💵' => 'banknote',
-        '🎁' => 'gift',
-        default => 'tags',
-    };
-@endphp
-
+{{-- Desain Buku Kas: ikon kategori selalu netral. Prop "color" tetap diterima, tapi sengaja tidak dipakai. --}}
 <span
-    {{ $attributes->class(['flex size-10 shrink-0 items-center justify-center rounded-full']) }}
-    style="background-color: color-mix(in srgb, {{ $color }} 16%, transparent); color: {{ $color }};"
+    {{ $attributes->class(['flex size-10 shrink-0 items-center justify-center rounded-field border border-base-300 bg-base-200 text-base-content']) }}
+    aria-hidden="true"
 >
-    <i data-lucide="{{ $lucideIcon }}" class="size-4"></i>
+    <i data-lucide="{{ App\CategoryIcon::lucideNameFor($icon) }}" class="size-4"></i>
 </span>

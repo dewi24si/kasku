@@ -1,37 +1,40 @@
 @props(['class' => 'h-40 w-40'])
 
-<svg viewBox="0 0 240 200" fill="none" xmlns="http://www.w3.org/2000/svg" {{ $attributes->merge(['class' => $class]) }}>
-    <defs>
-        <linearGradient id="kasku-card-back" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="#0a0a0a" />
-            <stop offset="1" stop-color="#1a1a1a" />
-        </linearGradient>
-        <linearGradient id="kasku-card-front" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="#1a1a1a" />
-            <stop offset="1" stop-color="#2e2e2e" />
-        </linearGradient>
-        <linearGradient id="kasku-coin" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="#2e2e2e" />
-            <stop offset="1" stop-color="#404040" />
-        </linearGradient>
-    </defs>
+{{-- Ilustrasi gaya Buku Kas: struk dengan baris bertitik dan koin emerald. Warnanya mengikuti tema terang/gelap. --}}
+<svg viewBox="0 0 240 200" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" {{ $attributes->merge(['class' => $class]) }}>
+    <g transform="rotate(-4 110 104)">
+        <path
+            d="M52 22h116v150l-9.7-7-9.6 7-9.7-7-9.7 7-9.6-7-9.7 7-9.7-7-9.6 7-9.7-7-9.7 7-9.6-7L52 172z"
+            class="fill-base-100 stroke-base-content/25"
+            stroke-width="1.5"
+            stroke-linejoin="round"
+        />
 
-    <circle cx="16" cy="142" r="4" fill="#1a1a1a" opacity="0.3" />
-    <circle cx="222" cy="150" r="5" fill="#1a1a1a" opacity="0.25" />
-    <path d="M34 36l3 7 7 3-7 3-3 7-3-7-7-3 7-3z" fill="#1a1a1a" opacity="0.5" />
+        <rect x="68" y="40" width="44" height="6" rx="1.5" class="fill-base-content/70" />
+        <rect x="68" y="52" width="28" height="4" rx="1" class="fill-base-content/25" />
 
-    <g transform="rotate(-10 95 118)">
-        <rect x="20" y="70" width="150" height="95" rx="18" fill="url(#kasku-card-back)" />
+        <g class="stroke-base-content/30" stroke-width="1.5" stroke-dasharray="1.5 4" stroke-linecap="round">
+            <line x1="100" y1="76" x2="126" y2="76" />
+            <line x1="92" y1="94" x2="126" y2="94" />
+            <line x1="104" y1="112" x2="126" y2="112" />
+        </g>
+        <g class="fill-base-content/45">
+            <rect x="68" y="73" width="26" height="5" rx="1" />
+            <rect x="68" y="91" width="18" height="5" rx="1" />
+            <rect x="68" y="109" width="30" height="5" rx="1" />
+        </g>
+        <g class="fill-base-content/70">
+            <rect x="130" y="73" width="22" height="5" rx="1" />
+            <rect x="130" y="91" width="22" height="5" rx="1" />
+            <rect x="130" y="109" width="22" height="5" rx="1" />
+        </g>
+
+        <line x1="68" y1="130" x2="152" y2="130" class="stroke-base-content/30" stroke-width="1.5" stroke-dasharray="4 3" />
+        <rect x="68" y="140" width="22" height="5" rx="1" class="fill-base-content/45" />
+        <rect x="118" y="138" width="34" height="8" rx="1.5" class="fill-primary" />
     </g>
 
-    <g transform="rotate(8 130 115)">
-        <rect x="55" y="60" width="155" height="100" rx="18" fill="url(#kasku-card-front)" stroke="white" stroke-opacity="0.15" stroke-width="2" />
-        <rect x="75" y="85" width="26" height="18" rx="4" fill="white" fill-opacity="0.3" />
-        <rect x="75" y="131" width="90" height="6" rx="3" fill="white" fill-opacity="0.3" />
-        <rect x="75" y="146" width="60" height="6" rx="3" fill="white" fill-opacity="0.2" />
-    </g>
-
-    <circle cx="196" cy="48" r="26" fill="url(#kasku-coin)" />
-    <circle cx="196" cy="48" r="19" fill="none" stroke="white" stroke-opacity="0.3" stroke-width="2" stroke-dasharray="3 4" />
-    <text x="196" y="53" text-anchor="middle" font-size="15" font-weight="700" fill="white">Rp</text>
+    <circle cx="186" cy="58" r="26" class="fill-primary" />
+    <circle cx="186" cy="58" r="19" class="stroke-primary-content/50" stroke-width="1.5" stroke-dasharray="3 3.5" />
+    <text x="186" y="63.5" text-anchor="middle" font-size="15" font-weight="500" font-family="'IBM Plex Mono', ui-monospace, monospace" class="fill-primary-content">Rp</text>
 </svg>

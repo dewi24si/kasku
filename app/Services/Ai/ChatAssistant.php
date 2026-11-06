@@ -111,7 +111,7 @@ class ChatAssistant
                 'status' => AiFunctionStatus::Failed,
             ]);
 
-            $this->reply($user, '⚠️ '.$validator->errors()->first());
+            $this->reply($user, $validator->errors()->first());
 
             return;
         }

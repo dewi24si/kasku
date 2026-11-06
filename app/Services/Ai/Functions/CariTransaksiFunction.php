@@ -68,7 +68,7 @@ class CariTransaksiFunction implements AiFunction
 
         $message = $transactions->isEmpty()
             ? 'Tidak ada transaksi yang cocok ditemukan.'
-            : "🔍 Ditemukan {$total} transaksi".($total > $transactions->count() ? ", menampilkan {$transactions->count()} terbaru" : '').'.';
+            : "Ditemukan {$total} transaksi".($total > $transactions->count() ? ", menampilkan {$transactions->count()} terbaru" : '').'.';
 
         return AiFunctionResult::success(
             message: $message,

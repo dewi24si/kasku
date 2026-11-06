@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\Ai\AiFunctionResult;
 use App\Services\Ai\Contracts\RequiresConfirmation;
 use App\Services\Ai\Functions\Concerns\FormatsTransactions;
+use App\Services\Ai\Functions\Concerns\RejectsFutureDates;
 use App\Services\Ai\Functions\Concerns\ScopesToUser;
 use App\Services\Budget\BudgetAlertChecker;
 use App\TransactionType;
@@ -17,7 +18,7 @@ use Illuminate\Validation\Rule;
 
 class UbahTransaksiFunction implements RequiresConfirmation
 {
-    use FormatsTransactions, ScopesToUser;
+    use FormatsTransactions, RejectsFutureDates, ScopesToUser;
 
     public function __construct(private BudgetAlertChecker $budgetAlertChecker) {}
 
@@ -35,7 +36,7 @@ class UbahTransaksiFunction implements RequiresConfirmation
             'changes.category_id' => ['sometimes', ...$this->categoryRule($user)],
             'changes.amount' => ['sometimes', 'integer', 'min:1'],
             'changes.description' => ['sometimes', 'nullable', 'string', 'max:255'],
-            'changes.transaction_date' => ['sometimes', 'date_format:Y-m-d'],
+            'changes.transaction_date' => ['bail', 'sometimes', 'date_format:Y-m-d', $this->notInFutureRule()],
         ];
     }
 
@@ -72,10 +73,10 @@ class UbahTransaksiFunction implements RequiresConfirmation
             ? $this->budgetAlertChecker->check($transaction)
             : null;
 
-        $message = '✅ Transaksi berhasil diubah: '.$this->transactionSummary($transaction).'.';
+        $message = 'Transaksi berhasil diubah: '.$this->transactionSummary($transaction).'.';
 
         if ($warning) {
-            $message .= "\n⚠️ Budget {$warning['category']} ({$warning['period']}) sudah terpakai {$warning['percentage']}% (batas peringatan {$warning['threshold']}%).";
+            $message .= "\nPeringatan: Budget {$warning['category']} ({$warning['period']}) sudah terpakai {$warning['percentage']}% (batas peringatan {$warning['threshold']}%).";
         }
 
         return AiFunctionResult::success(

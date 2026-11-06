@@ -25,6 +25,15 @@ class PromptBuilderTest extends TestCase
         $this->assertStringContainsString('tanpa alur konfirmasi normal', $prompt);
     }
 
+    public function test_prompt_forbids_emoji_in_replies(): void
+    {
+        $user = User::factory()->create();
+
+        $prompt = app(PromptBuilder::class)->build($user);
+
+        $this->assertStringContainsString('Jangan pernah memakai emoji di balasanmu', $prompt);
+    }
+
     public function test_prompt_only_includes_the_users_own_data(): void
     {
         $user = User::factory()->create();

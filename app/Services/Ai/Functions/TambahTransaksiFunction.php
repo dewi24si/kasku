@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\Ai\AiFunctionResult;
 use App\Services\Ai\Contracts\AiFunction;
 use App\Services\Ai\Functions\Concerns\FormatsTransactions;
+use App\Services\Ai\Functions\Concerns\RejectsFutureDates;
 use App\Services\Ai\Functions\Concerns\ScopesToUser;
 use App\Services\Budget\BudgetAlertChecker;
 use App\TransactionSource;
@@ -20,7 +21,7 @@ use Illuminate\Validation\Rule;
 
 class TambahTransaksiFunction implements AiFunction
 {
-    use FormatsTransactions, ScopesToUser;
+    use FormatsTransactions, RejectsFutureDates, ScopesToUser;
 
     public function __construct(private BudgetAlertChecker $budgetAlertChecker) {}
 
@@ -41,7 +42,7 @@ class TambahTransaksiFunction implements AiFunction
             ],
             'items.*.amount' => ['required', 'integer', 'min:1'],
             'items.*.description' => ['nullable', 'string', 'max:255'],
-            'items.*.transaction_date' => ['required', 'date_format:Y-m-d'],
+            'items.*.transaction_date' => ['bail', 'required', 'date_format:Y-m-d', $this->notInFutureRule()],
         ];
     }
 
@@ -88,11 +89,11 @@ class TambahTransaksiFunction implements AiFunction
         }
 
         $message = $created->count() === 1
-            ? '✅ Tercatat: '.$this->formatRupiah($created->first()->amount)." untuk {$created->first()->category->name} pada ".$created->first()->transaction_date->translatedFormat('d M Y').'.'
-            : "✅ {$created->count()} transaksi berhasil dicatat.";
+            ? 'Tercatat: '.$this->formatRupiah($created->first()->amount)." untuk {$created->first()->category->name} pada ".$created->first()->transaction_date->translatedFormat('d M Y').'.'
+            : "{$created->count()} transaksi berhasil dicatat.";
 
         foreach ($warnings as $warning) {
-            $message .= "\n⚠️ Budget {$warning['category']} ({$warning['period']}) sudah terpakai {$warning['percentage']}% (batas peringatan {$warning['threshold']}%).";
+            $message .= "\nPeringatan: Budget {$warning['category']} ({$warning['period']}) sudah terpakai {$warning['percentage']}% (batas peringatan {$warning['threshold']}%).";
         }
 
         return AiFunctionResult::success(

@@ -45,6 +45,7 @@ class PromptBuilder
             Tugasmu: memilih fungsi yang tepat ketika user ingin mencatat atau menanyakan keuangannya, lalu Laravel akan memvalidasi dan mengeksekusinya. Kamu TIDAK pernah menulis langsung ke database.
 
             Aturan penting:
+            - Jangan pernah memakai emoji di balasanmu. Tulis dengan teks biasa saja.
             - Tanggal hari ini adalah {$today}. Ubah kata relatif ("kemarin", "minggu lalu", "bulan ini") menjadi tanggal/periode pasti sebelum memanggil fungsi.
             - category_id HARUS dipilih dari daftar kategori di bawah ini. Jangan pernah mengarang category_id.
             - transaction_id (untuk ubah_transaksi/hapus_transaksi) HARUS dipilih dari daftar transaksi terbaru di bawah ini. Jangan mengarang id.

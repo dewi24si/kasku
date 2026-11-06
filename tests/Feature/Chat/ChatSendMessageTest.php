@@ -135,6 +135,46 @@ class ChatSendMessageTest extends TestCase
         $this->assertDatabaseCount('transactions', 0);
     }
 
+    public function test_tambah_transaksi_rejects_future_date_with_clear_message(): void
+    {
+        $this->travelTo('2026-11-06 10:00:00');
+        $user = User::factory()->create();
+        $category = Category::factory()->create(['user_id' => $user->id, 'type' => TransactionType::Pengeluaran]);
+
+        $this->fakeClaudeToolUse('tambah_transaksi', [
+            'items' => [['type' => 'pengeluaran', 'category_id' => $category->id, 'amount' => 50000, 'description' => 'Beli buku', 'transaction_date' => '2026-12-05']],
+        ]);
+
+        Livewire::actingAs($user)->test(Chat::class)
+            ->set('message', 'catat beli buku 50 ribu')
+            ->call('sendMessage');
+
+        $this->assertDatabaseCount('transactions', 0);
+        $this->assertSame(AiFunctionStatus::Failed, AiFunctionLog::first()->status);
+        $this->assertDatabaseHas('chat_messages', [
+            'role' => 'assistant',
+            'content' => 'Tanggal 05 Des 2026 masih di masa depan. Transaksi hanya bisa dicatat sampai hari ini (06 Nov 2026).',
+        ]);
+    }
+
+    public function test_tambah_transaksi_accepts_todays_date(): void
+    {
+        $this->travelTo('2026-11-06 23:30:00');
+        $user = User::factory()->create();
+        $category = Category::factory()->create(['user_id' => $user->id, 'type' => TransactionType::Pengeluaran]);
+
+        $this->fakeClaudeToolUse('tambah_transaksi', [
+            'items' => [['type' => 'pengeluaran', 'category_id' => $category->id, 'amount' => 25000, 'transaction_date' => '2026-11-06']],
+        ]);
+
+        Livewire::actingAs($user)->test(Chat::class)
+            ->set('message', 'catat makan malam 25 ribu')
+            ->call('sendMessage');
+
+        $this->assertDatabaseHas('transactions', ['user_id' => $user->id, 'amount' => 25000]);
+        $this->assertSame(AiFunctionStatus::Success, AiFunctionLog::first()->status);
+    }
+
     public function test_tambah_transaksi_attaches_budget_warning_when_threshold_exceeded(): void
     {
         $user = User::factory()->create();

@@ -55,8 +55,8 @@ class TampilkanGrafikFunction implements AiFunction
         $typeLabel = $args['type'] === 'pemasukan' ? 'Pemasukan' : 'Pengeluaran';
 
         $message = $breakdown->isEmpty()
-            ? "📈 Belum ada data {$typeLabel} untuk {$periodLabel}."
-            : "📈 Grafik {$typeLabel} per kategori untuk {$periodLabel} siap dilihat.";
+            ? "Belum ada data {$typeLabel} untuk {$periodLabel}."
+            : "Grafik {$typeLabel} per kategori untuk {$periodLabel} siap dilihat.";
 
         return AiFunctionResult::success(
             message: $message,

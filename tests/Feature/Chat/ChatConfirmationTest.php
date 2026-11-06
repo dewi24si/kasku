@@ -37,6 +37,23 @@ class ChatConfirmationTest extends TestCase
         $this->assertSame(AiFunctionStatus::Confirmed, $log->refresh()->status);
     }
 
+    public function test_ubah_transaksi_rejects_moving_date_to_the_future(): void
+    {
+        $this->travelTo('2026-11-06 10:00:00');
+        $user = User::factory()->create();
+        $category = Category::factory()->create(['user_id' => $user->id, 'type' => TransactionType::Pengeluaran]);
+        $transaction = Transaction::factory()->create([
+            'user_id' => $user->id, 'category_id' => $category->id, 'type' => TransactionType::Pengeluaran, 'transaction_date' => '2026-11-02',
+        ]);
+
+        $this->fakeClaudeToolUse('ubah_transaksi', ['transaction_id' => $transaction->id, 'changes' => ['transaction_date' => '2026-12-05']]);
+        Livewire::actingAs($user)->test(Chat::class)->set('message', 'pindahkan ke 5 desember')->call('sendMessage');
+
+        $this->assertSame('2026-11-02', $transaction->refresh()->transaction_date->toDateString());
+        $this->assertSame(AiFunctionStatus::Failed, AiFunctionLog::first()->status);
+        $this->assertDatabaseMissing('ai_function_logs', ['status' => AiFunctionStatus::PendingConfirmation->value]);
+    }
+
     public function test_hapus_transaksi_soft_deletes_only_after_confirmation(): void
     {
         $user = User::factory()->create();

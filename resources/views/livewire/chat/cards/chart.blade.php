@@ -1,8 +1,11 @@
-<div class="w-full max-w-xs md:max-w-md rounded-xl bg-base-100 p-3 shadow-sm ring-1 ring-base-300">
-    <p class="mb-2 text-xs font-medium text-base-content/50">{{ $attachment['title'] }}</p>
+<div class="w-full max-w-xs rounded-box border border-base-300 bg-base-100 p-4 md:max-w-md">
+    <div class="mb-3 flex items-center justify-between gap-2">
+        <p class="label-struk truncate">{{ $attachment['title'] }}</p>
+        <i data-lucide="chart-pie" class="size-4 shrink-0 text-neutral"></i>
+    </div>
 
     @if (empty($attachment['labels']))
-        <p class="text-sm text-base-content/50">Belum ada data.</p>
+        <p class="text-sm text-neutral">Belum ada data.</p>
     @else
         <div wire:ignore class="relative h-48 md:h-60">
             <canvas data-chart="{{ json_encode([
@@ -12,7 +15,6 @@
                     'datasets' => array_map(fn ($dataset) => [
                         'label' => $dataset['label'],
                         'data' => $dataset['data'],
-                        'backgroundColor' => $dataset['colors'],
                     ], $attachment['datasets']),
                 ],
                 'options' => [

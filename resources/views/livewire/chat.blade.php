@@ -1,4 +1,4 @@
-<div class="-mx-4 -mt-6 -mb-24 flex h-[calc(100dvh-8.5rem)] flex-col md:-mx-6 lg:-mx-10 lg:-my-10 lg:h-dvh">
+<div class="-mx-4 -mt-6 -mb-24 flex h-[calc(100dvh-7.5rem-env(safe-area-inset-bottom))] flex-col md:-mx-6 lg:-mx-10 lg:-my-10 lg:h-dvh">
     <div
         id="chat-scroll"
         class="flex-1 overflow-y-auto px-4 py-4 md:px-6 lg:px-10 lg:pt-10"
@@ -10,34 +10,34 @@
         @forelse ($this->messages as $chatMessage)
             @include('livewire.chat._message', ['chatMessage' => $chatMessage])
         @empty
-            <div class="flex flex-1 flex-col items-center justify-center gap-2 text-center text-base-content/50">
+            <div class="flex flex-1 flex-col items-center justify-center gap-2 text-center text-neutral">
                 <i data-lucide="bot" class="size-10"></i>
                 <p class="text-sm">Mulai chat untuk mencatat transaksi atau tanya keuanganmu.</p>
                 <p class="text-xs">Contoh: "catat makan siang 25000" atau kirim foto struk</p>
-                <p class="text-xs">Atau ketuk salah satu saran di bawah 👇</p>
+                <p class="text-xs">Atau ketuk salah satu saran di bawah.</p>
             </div>
         @endforelse
 
-        <div wire:loading wire:target="sendMessage,sendSuggestion" class="flex items-center gap-2 text-sm text-base-content/50">
+        <div wire:loading wire:target="sendMessage,sendSuggestion" class="flex items-center gap-2 border-l-2 border-base-content/20 pl-3 text-sm text-neutral">
             <i data-lucide="loader-2" class="size-4 animate-spin"></i>
             AI sedang mengetik...
         </div>
         </div>
     </div>
 
-    <div class="border-t border-base-200 bg-base-100/95 px-4 py-3 backdrop-blur-xl md:px-6 lg:border-t-0 lg:bg-transparent lg:px-10 lg:pt-2 lg:pb-6 lg:backdrop-blur-none" x-data="voiceInput">
-        <div class="mx-auto w-full max-w-3xl lg:rounded-3xl lg:bg-base-100 lg:p-4 lg:shadow-sm lg:ring-1 lg:ring-base-300">
+    <div class="border-t border-base-300 bg-base-100 px-4 py-3 md:px-6 lg:border-t-0 lg:bg-transparent lg:px-10 lg:pt-2 lg:pb-6" x-data="voiceInput">
+        <div class="mx-auto w-full max-w-3xl lg:rounded-box lg:bg-base-100 lg:p-4 lg:border lg:border-base-300">
         @if ($photo)
-            <div class="mb-2 flex items-center gap-2 rounded-2xl bg-base-200 p-2">
-                <img src="{{ $photo->temporaryUrl() }}" alt="Pratinjau foto" class="size-12 rounded-xl object-cover">
-                <p class="flex-1 truncate text-xs text-base-content/60">{{ $photo->getClientOriginalName() }}</p>
-                <button type="button" wire:click="removePhoto" class="btn btn-ghost btn-xs btn-circle">
+            <div class="mb-2 flex items-center gap-2 rounded-field border border-base-300 bg-base-200 p-2">
+                <img src="{{ $photo->temporaryUrl() }}" alt="Pratinjau foto" class="size-12 rounded-field object-cover">
+                <p class="flex-1 truncate text-xs text-neutral">{{ $photo->getClientOriginalName() }}</p>
+                <button type="button" wire:click="removePhoto" class="btn btn-ghost btn-xs btn-square" aria-label="Hapus foto">
                     <i data-lucide="x" class="size-3.5"></i>
                 </button>
             </div>
         @endif
 
-        <div wire:loading wire:target="photo" class="mb-2 flex items-center gap-2 text-xs text-base-content/50">
+        <div wire:loading wire:target="photo" class="mb-2 flex items-center gap-2 text-xs text-neutral">
             <i data-lucide="loader-2" class="size-3.5 animate-spin"></i>
             Mengunggah foto...
         </div>
@@ -48,7 +48,7 @@
                 <button
                     type="button"
                     wire:click="sendSuggestion('{{ $key }}')"
-                    class="btn btn-sm shrink-0 rounded-full border-base-300 bg-base-100 font-medium text-base-content/80"
+                    class="btn btn-sm shrink-0 border-base-300 bg-base-100 font-medium text-base-content"
                 >
                     <i data-lucide="{{ $suggestion['icon'] }}" class="size-3.5 text-primary"></i>
                     {{ $suggestion['label'] }}
@@ -58,7 +58,7 @@
                 <button
                     type="button"
                     x-on:click="$wire.message = @js($prefill['prefill']); $nextTick(() => { $refs.messageInput.focus(); $refs.messageInput.setSelectionRange(999, 999) })"
-                    class="btn btn-sm shrink-0 rounded-full border-dashed border-base-300 bg-base-100 font-medium text-base-content/60"
+                    class="btn btn-sm shrink-0 border-dashed border-base-300 bg-base-100 font-medium text-neutral"
                 >
                     <i data-lucide="{{ $prefill['icon'] }}" class="size-3.5"></i>
                     {{ $prefill['label'] }}
@@ -72,8 +72,9 @@
             <button
                 type="button"
                 x-on:click="$refs.photoInput.click()"
-                class="btn btn-ghost btn-circle shrink-0 bg-base-200"
+                class="btn btn-square shrink-0 border-base-300 bg-base-200"
                 title="Lampirkan foto struk"
+                aria-label="Lampirkan foto struk"
             >
                 <i data-lucide="camera" class="size-4"></i>
             </button>
@@ -85,11 +86,11 @@
                 x-show="supported"
                 style="display: none"
                 x-on:click="toggle()"
-                x-bind:class="recording ? 'btn-primary animate-pulse ring-4 ring-primary/20' : 'btn-ghost bg-base-200'"
+                x-bind:class="recording ? 'btn-primary animate-pulse ring-4 ring-primary/20' : 'border-base-300 bg-base-200'"
                 x-bind:title="recording ? 'Berhenti merekam' : 'Bicara untuk mengisi pesan'"
                 x-bind:aria-label="recording ? 'Berhenti merekam' : 'Bicara untuk mengisi pesan'"
                 x-bind:aria-pressed="recording.toString()"
-                class="btn btn-circle shrink-0 border-none"
+                class="btn btn-square shrink-0"
                 title="Bicara untuk mengisi pesan"
                 aria-label="Bicara untuk mengisi pesan"
             >
@@ -103,11 +104,12 @@
                 x-ref="messageInput"
                 placeholder="Tulis pesan atau lampirkan foto..."
                 autocomplete="off"
-                class="input flex-1 rounded-full bg-base-200"
+                class="input flex-1 border-base-300 bg-base-200"
             >
             <button
                 type="submit"
-                class="btn btn-circle btn-primary shrink-0 border-none"
+                class="btn btn-square btn-primary shrink-0"
+                aria-label="Kirim pesan"
                 wire:loading.attr="disabled"
                 wire:target="sendMessage,sendSuggestion,photo"
             >
@@ -119,7 +121,7 @@
             <p class="pt-2 text-xs text-error">{{ $message }}</p>
         @enderror
         @if ($this->remainingDailyMessages > 0 && $this->remainingDailyMessages <= 10)
-            <p class="pt-2 text-center text-xs text-base-content/50">Sisa {{ $this->remainingDailyMessages }} pesan hari ini</p>
+            <p class="pt-2 text-center text-xs text-neutral">Sisa {{ $this->remainingDailyMessages }} pesan hari ini</p>
         @endif
         @error('photo')
             <p class="pt-2 text-xs text-error">{{ $message }}</p>

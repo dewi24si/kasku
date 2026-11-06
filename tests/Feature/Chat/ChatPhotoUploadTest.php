@@ -36,7 +36,7 @@ class ChatPhotoUploadTest extends TestCase
         $this->fakeClaudeToolUse('tambah_transaksi', [
             'items' => [[
                 'type' => 'pengeluaran', 'category_id' => $category->id, 'amount' => 51000,
-                'description' => 'Warung Kopi Senja', 'transaction_date' => '2026-12-08',
+                'description' => 'Warung Kopi Senja', 'transaction_date' => '2026-11-02',
             ]],
         ]);
 
@@ -136,7 +136,7 @@ class ChatPhotoUploadTest extends TestCase
         $category = Category::factory()->create(['user_id' => $user->id, 'type' => TransactionType::Pengeluaran]);
 
         $this->fakeClaudeToolUse('tambah_transaksi', [
-            'items' => [['type' => 'pengeluaran', 'category_id' => $category->id, 'amount' => 20000, 'transaction_date' => '2026-12-01']],
+            'items' => [['type' => 'pengeluaran', 'category_id' => $category->id, 'amount' => 20000, 'transaction_date' => '2026-11-02']],
         ]);
 
         $photo = UploadedFile::fake()->image('struk.jpg');

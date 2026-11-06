@@ -1,31 +1,45 @@
 <div>
     @if ($showForm)
-        <div class="fixed inset-0 z-40 flex items-end justify-center bg-black/40 backdrop-blur-sm sm:items-center" wire:click.self="close">
-            <div class="max-h-[90vh] w-full max-w-sm overflow-y-auto rounded-t-3xl bg-base-100 p-4 sm:rounded-3xl lg:max-w-lg lg:p-6 lg:shadow-xl">
-                <div class="mb-4 flex items-center justify-between">
-                    <h2 class="text-lg font-semibold">
-                        {{ $editingTransactionId ? 'Ubah' : 'Tambah' }} Transaksi
-                    </h2>
-                    <button type="button" wire:click="close" class="btn btn-sm btn-circle btn-ghost" aria-label="Tutup">
+        <div class="fixed inset-0 z-40 flex items-end justify-center bg-black/40 sm:items-center" wire:click.self="close">
+            <div class="max-h-[90vh] w-full max-w-sm overflow-y-auto rounded-t-box border border-base-300 bg-base-100 p-5 sm:rounded-box lg:max-w-lg lg:p-6">
+                <div class="mb-4 flex items-start justify-between gap-2">
+                    <div>
+                        <p class="label-struk">{{ $editingTransactionId ? 'Ubah catatan' : 'Catatan baru' }}</p>
+                        <h2 class="mt-1 text-lg font-semibold">
+                            {{ $editingTransactionId ? 'Ubah' : 'Tambah' }} Transaksi
+                        </h2>
+                    </div>
+                    <button type="button" wire:click="close" class="btn btn-ghost btn-sm btn-square text-neutral" aria-label="Tutup">
                         <i data-lucide="x" class="size-4"></i>
                     </button>
                 </div>
 
                 <form wire:submit="save" class="space-y-4">
-                    <div class="grid grid-cols-2 gap-1 rounded-full bg-base-200 p-1">
-                        <label class="btn btn-sm rounded-full border-none shadow-none {{ $type === 'pengeluaran' ? 'bg-error text-error-content' : 'bg-transparent text-base-content/60' }}">
-                            <input type="radio" wire:model.live="type" value="pengeluaran" class="hidden">
+                    <div class="grid grid-cols-2 gap-1 rounded-field border border-base-300 bg-base-200 p-1" role="radiogroup" aria-label="Tipe transaksi">
+                        <label @class([
+                            'btn btn-sm border-none shadow-none has-focus-visible:outline-2 has-focus-visible:outline-offset-1 has-focus-visible:outline-primary',
+                            'bg-error text-error-content' => $type === 'pengeluaran',
+                            'bg-transparent text-neutral' => $type !== 'pengeluaran',
+                        ])>
+                            <input type="radio" wire:model.live="type" value="pengeluaran" class="sr-only">
                             Pengeluaran
                         </label>
-                        <label class="btn btn-sm rounded-full border-none shadow-none {{ $type === 'pemasukan' ? 'bg-primary text-primary-content' : 'bg-transparent text-base-content/60' }}">
-                            <input type="radio" wire:model.live="type" value="pemasukan" class="hidden">
+                        <label @class([
+                            'btn btn-sm border-none shadow-none has-focus-visible:outline-2 has-focus-visible:outline-offset-1 has-focus-visible:outline-primary',
+                            'bg-primary text-primary-content' => $type === 'pemasukan',
+                            'bg-transparent text-neutral' => $type !== 'pemasukan',
+                        ])>
+                            <input type="radio" wire:model.live="type" value="pemasukan" class="sr-only">
                             Pemasukan
                         </label>
                     </div>
 
                     <fieldset class="fieldset">
                         <legend class="fieldset-legend">Jumlah (Rp)</legend>
-                        <input type="number" wire:model="amount" min="1" inputmode="numeric" class="input w-full" placeholder="35000">
+                        <label class="input w-full">
+                            <span class="rupiah text-neutral">Rp</span>
+                            <input type="number" wire:model="amount" min="1" inputmode="numeric" class="rupiah" placeholder="35000">
+                        </label>
                         @error('amount')
                             <p class="fieldset-label text-error">{{ $message }}</p>
                         @enderror
@@ -36,7 +50,7 @@
                         <select wire:model="categoryId" class="select w-full">
                             <option value="">Pilih kategori</option>
                             @foreach ($this->categories as $category)
-                                <option value="{{ $category->id }}">{{ $category->icon }} {{ $category->name }}</option>
+                                <option value="{{ $category->id }}">{{ $category->name }}</option>
                             @endforeach
                         </select>
                         @error('categoryId')
@@ -60,19 +74,19 @@
                         @enderror
                     </fieldset>
 
-                    <div class="flex gap-2">
+                    <div class="flex gap-2 border-t border-base-300 pt-4">
                         @if ($editingTransactionId)
                             <button
                                 type="button"
                                 wire:click="delete"
                                 wire:confirm="Hapus transaksi ini?"
-                                class="btn btn-outline btn-error"
+                                class="btn btn-outline btn-error btn-square"
                                 aria-label="Hapus transaksi"
                             >
                                 <i data-lucide="trash-2" class="size-4"></i>
                             </button>
                         @else
-                            <button type="button" wire:click="close" class="btn btn-ghost flex-1">Batal</button>
+                            <button type="button" wire:click="close" class="btn btn-outline flex-1 border-base-300">Batal</button>
                         @endif
                         <button type="submit" class="btn btn-primary flex-1" wire:loading.attr="disabled" wire:target="save">
                             <span wire:loading.remove wire:target="save">Simpan</span>

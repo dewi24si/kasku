@@ -181,7 +181,7 @@ class Chat extends Component
                 'result' => ['errors' => $validator->errors()->all()],
             ]);
 
-            $this->reply('⚠️ '.$validator->errors()->first());
+            $this->reply($validator->errors()->first());
 
             return;
         }
@@ -192,7 +192,7 @@ class Chat extends Component
             report($exception);
 
             $log->update(['status' => AiFunctionStatus::Failed, 'result' => ['errors' => ['Gagal memproses permintaan.']]]);
-            $this->reply('⚠️ Gagal memproses permintaan ini.');
+            $this->reply('Gagal memproses permintaan ini.');
 
             return;
         }

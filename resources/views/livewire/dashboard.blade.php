@@ -1,17 +1,21 @@
 <div class="space-y-4 lg:space-y-6">
+    @php
+        $formatRupiah = fn (int $amount): string => ($amount < 0 ? '-' : '').'Rp'.number_format(abs($amount), 0, ',', '.');
+    @endphp
+
     <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div class="hidden lg:block">
             <h1 class="text-2xl font-bold tracking-tight">Dashboard</h1>
-            <p class="text-sm text-base-content/50">Ringkasan keuanganmu di {{ $this->periodLabel }}</p>
+            <p class="text-sm text-neutral">Ringkasan keuanganmu di {{ $this->periodLabel }}</p>
         </div>
 
         <div class="flex items-center gap-3">
-            <div class="flex flex-1 items-center justify-between rounded-2xl bg-base-100 p-1.5 shadow-sm ring-1 ring-base-300 lg:w-64 lg:flex-none">
-                <button type="button" wire:click="previousPeriod" class="btn btn-sm btn-circle border-none bg-base-200 text-base-content/70">
+            <div class="flex flex-1 items-center justify-between rounded-box border border-base-300 bg-base-100 p-1.5 lg:w-64 lg:flex-none">
+                <button type="button" wire:click="previousPeriod" class="btn btn-ghost btn-sm btn-square text-neutral" aria-label="Periode sebelumnya">
                     <i data-lucide="chevron-left" class="size-4"></i>
                 </button>
                 <p class="text-sm font-semibold">{{ $this->periodLabel }}</p>
-                <button type="button" wire:click="nextPeriod" class="btn btn-sm btn-circle border-none bg-base-200 text-base-content/70">
+                <button type="button" wire:click="nextPeriod" class="btn btn-ghost btn-sm btn-square text-neutral" aria-label="Periode berikutnya">
                     <i data-lucide="chevron-right" class="size-4"></i>
                 </button>
             </div>
@@ -19,7 +23,7 @@
             <button
                 type="button"
                 wire:click="$dispatch('open-transaction-form')"
-                class="btn btn-primary hidden rounded-2xl border-none shadow-sm lg:inline-flex"
+                class="btn btn-primary hidden lg:inline-flex"
             >
                 <i data-lucide="plus" class="size-4"></i>
                 Tambah Transaksi
@@ -27,102 +31,86 @@
         </div>
     </div>
 
-    {{-- HP: satu kartu saldo seperti semula --}}
-    <div class="rounded-3xl bg-base-100 p-5 shadow-sm ring-1 ring-base-300 md:hidden">
-        <div class="space-y-4">
-            <div class="flex items-center justify-between">
-                <p class="text-sm font-medium text-base-content/50">Saldo &middot; {{ $this->periodLabel }}</p>
-                <span class="flex size-9 items-center justify-center rounded-full bg-primary/10 text-primary">
-                    <i data-lucide="wallet" class="size-4"></i>
-                </span>
-            </div>
-            <p class="text-4xl font-bold tracking-tight">Rp{{ number_format($this->summary['saldo'], 0, ',', '.') }}</p>
-            <div class="grid grid-cols-2 gap-3">
-                <div class="flex items-center gap-2 rounded-2xl bg-base-200 p-2.5 ring-1 ring-base-300">
-                    <i data-lucide="arrow-down-right" class="size-4 shrink-0 text-success"></i>
-                    <div class="min-w-0">
-                        <p class="text-xs text-base-content/50">Pemasukan</p>
-                        <p class="truncate text-sm font-semibold">Rp{{ number_format($this->summary['pemasukan'], 0, ',', '.') }}</p>
-                    </div>
-                </div>
-                <div class="flex items-center gap-2 rounded-2xl bg-base-200 p-2.5 ring-1 ring-base-300">
-                    <i data-lucide="arrow-up-right" class="size-4 shrink-0 text-error"></i>
-                    <div class="min-w-0">
-                        <p class="text-xs text-base-content/50">Pengeluaran</p>
-                        <p class="truncate text-sm font-semibold">Rp{{ number_format($this->summary['pengeluaran'], 0, ',', '.') }}</p>
-                    </div>
-                </div>
-            </div>
+    {{-- Saldo sebagai angka utama, rincian buku kas di bawahnya (HP) atau di sampingnya (desktop). --}}
+    <section class="rounded-box border border-base-300 bg-base-100 p-5 lg:grid lg:grid-cols-[1fr_22rem] lg:items-end lg:gap-10 lg:p-8">
+        <div class="min-w-0">
+            <p class="label-struk">Saldo &middot; {{ $this->periodLabel }}</p>
+            <p @class([
+                'rupiah mt-2 truncate text-4xl tracking-tight md:text-5xl',
+                'text-error' => $this->summary['saldo'] < 0,
+            ])>{{ $formatRupiah($this->summary['saldo']) }}</p>
         </div>
-    </div>
 
-    {{-- Tablet & desktop: kartu ringkasan terpisah dalam grid --}}
-    @php
-        $summaryCards = [
-            ['label' => 'Saldo', 'value' => 'Rp'.number_format($this->summary['saldo'], 0, ',', '.'), 'icon' => 'wallet', 'iconClass' => 'bg-primary/10 text-primary'],
-            ['label' => 'Pemasukan', 'value' => 'Rp'.number_format($this->summary['pemasukan'], 0, ',', '.'), 'icon' => 'arrow-down-right', 'iconClass' => 'bg-success/10 text-success'],
-            ['label' => 'Pengeluaran', 'value' => 'Rp'.number_format($this->summary['pengeluaran'], 0, ',', '.'), 'icon' => 'arrow-up-right', 'iconClass' => 'bg-error/10 text-error'],
-            ['label' => 'Jumlah Transaksi', 'value' => number_format($this->transactionsForPeriod->count(), 0, ',', '.'), 'icon' => 'receipt', 'iconClass' => 'bg-base-200 text-base-content/70'],
-        ];
-    @endphp
-    <div class="hidden gap-4 md:grid md:grid-cols-2 lg:grid-cols-4">
-        @foreach ($summaryCards as $summaryCard)
-            <div class="min-w-0 rounded-3xl bg-base-100 p-5 shadow-sm ring-1 ring-base-300">
-                <div class="flex items-center justify-between gap-2">
-                    <p class="truncate text-sm font-medium text-base-content/50">{{ $summaryCard['label'] }}</p>
-                    <span class="flex size-9 shrink-0 items-center justify-center rounded-full {{ $summaryCard['iconClass'] }}">
-                        <i data-lucide="{{ $summaryCard['icon'] }}" class="size-4"></i>
-                    </span>
-                </div>
-                <p class="mt-3 truncate text-2xl font-bold tracking-tight tabular-nums">{{ $summaryCard['value'] }}</p>
+        <dl class="mt-5 space-y-2 border-t border-base-300 pt-4 text-sm lg:mt-0 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8">
+            <div class="flex items-baseline gap-2">
+                <dt class="flex items-center gap-1.5 text-neutral">
+                    <i data-lucide="arrow-down-right" class="size-3.5 text-success"></i>
+                    Pemasukan
+                </dt>
+                <x-ledger-leader />
+                <dd class="rupiah text-success">+{{ $formatRupiah($this->summary['pemasukan']) }}</dd>
             </div>
-        @endforeach
-    </div>
+            <div class="flex items-baseline gap-2">
+                <dt class="flex items-center gap-1.5 text-neutral">
+                    <i data-lucide="arrow-up-right" class="size-3.5 text-error"></i>
+                    Pengeluaran
+                </dt>
+                <x-ledger-leader />
+                <dd class="rupiah text-error">-{{ $formatRupiah($this->summary['pengeluaran']) }}</dd>
+            </div>
+            <div class="flex items-baseline gap-2">
+                <dt class="flex items-center gap-1.5 text-neutral">
+                    <i data-lucide="receipt" class="size-3.5"></i>
+                    Jumlah transaksi
+                </dt>
+                <x-ledger-leader />
+                <dd class="rupiah">{{ number_format($this->transactionsForPeriod->count(), 0, ',', '.') }}</dd>
+            </div>
+        </dl>
+    </section>
 
     @if ($this->isCurrentPeriod)
-        <div class="rounded-3xl bg-base-100 p-4 shadow-sm ring-1 ring-base-300 lg:p-5">
+        <section class="rounded-box border border-base-300 bg-base-100 p-4 lg:p-5">
             <div class="mb-3 flex items-center gap-2">
-                <span class="flex size-7 items-center justify-center rounded-full bg-primary/10 text-primary">
-                    <i data-lucide="sparkles" class="size-3.5"></i>
-                </span>
-                <p class="text-sm font-semibold">Insight Keuanganmu</p>
+                <i data-lucide="sparkles" class="size-4 text-primary"></i>
+                <h2 class="text-sm font-semibold">Insight Keuanganmu</h2>
             </div>
 
             @if (empty($this->insights))
-                <p class="text-sm text-base-content/50">Belum cukup data untuk insight. Catat transaksimu beberapa hari, nanti Kasku kasih analisis singkat di sini. 🌱</p>
+                <p class="text-sm text-neutral">Belum cukup data untuk insight. Catat transaksimu beberapa hari, nanti Kasku kasih analisis singkat di sini.</p>
             @else
                 <ul class="space-y-2 md:grid md:grid-cols-2 md:gap-3 md:space-y-0">
                     @foreach ($this->insights as $insight)
                         <li @class([
-                            'flex items-start gap-2.5 rounded-2xl p-3 text-sm',
-                            'bg-warning/10' => $insight['tone'] === 'warning',
-                            'bg-success/10' => $insight['tone'] === 'success',
-                            'bg-base-200' => $insight['tone'] === 'info',
+                            'flex items-start gap-2.5 rounded-field border p-3 text-sm',
+                            'border-warning/30 bg-warning/10' => $insight['tone'] === 'warning',
+                            'border-success/30 bg-success/10' => $insight['tone'] === 'success',
+                            'border-base-300 bg-base-200' => $insight['tone'] === 'info',
                         ])>
                             <i data-lucide="{{ $insight['icon'] }}" @class([
                                 'mt-0.5 size-4 shrink-0',
                                 'text-warning' => $insight['tone'] === 'warning',
                                 'text-success' => $insight['tone'] === 'success',
-                                'text-primary' => $insight['tone'] === 'info',
+                                'text-neutral' => $insight['tone'] === 'info',
                             ])></i>
                             <span>{{ $insight['message'] }}</span>
                         </li>
                     @endforeach
                 </ul>
             @endif
-        </div>
+        </section>
     @endif
 
-    <a href="{{ route('riwayat', ['period' => $period]) }}" class="flex items-center justify-between rounded-2xl bg-base-100 px-4 py-3 shadow-sm ring-1 ring-base-300 lg:hidden">
+    <a href="{{ route('riwayat', ['period' => $period]) }}" class="flex items-center justify-between rounded-box border border-base-300 bg-base-100 px-4 py-3 lg:hidden">
         <span class="flex items-center gap-2 text-sm font-semibold text-primary">
             <i data-lucide="history" class="size-4"></i>
             Lihat Semua Transaksi {{ $this->periodLabel }}
         </span>
-        <i data-lucide="chevron-right" class="size-4 text-base-content/40"></i>
+        <i data-lucide="chevron-right" class="size-4 text-neutral"></i>
     </a>
 
     @if ($this->transactionsForPeriod->isEmpty())
-        <div class="flex flex-col items-center gap-2 rounded-3xl bg-base-100 py-12 text-center text-base-content/50 shadow-sm ring-1 ring-base-300">
+        <div class="flex flex-col items-center gap-2 rounded-box border border-base-300 bg-base-100 py-12 text-center text-neutral">
             <i data-lucide="inbox" class="size-10"></i>
             <p class="text-sm">Belum ada transaksi di {{ $this->periodLabel }}.</p>
             <p class="text-xs">
@@ -133,12 +121,12 @@
         </div>
     @else
         <div class="grid gap-4 lg:grid-cols-5 lg:gap-6">
-            <div class="card min-w-0 bg-base-100 shadow-sm ring-1 ring-base-300 lg:col-span-3">
+            <section class="card min-w-0 border border-base-300 bg-base-100 lg:col-span-3">
                 <div class="card-body">
-                    <p class="mb-2 text-xs font-medium text-base-content/50">Pengeluaran per Kategori</p>
+                    <h2 class="label-struk mb-2">Pengeluaran per Kategori</h2>
 
                     @if (empty($this->expenseChart['labels']))
-                        <p class="text-sm text-base-content/50">Belum ada pengeluaran bulan ini.</p>
+                        <p class="text-sm text-neutral">Belum ada pengeluaran bulan ini.</p>
                     @else
                         <div wire:ignore wire:key="expense-chart-{{ md5(json_encode($this->expenseChart)) }}" class="relative isolate h-72 overflow-hidden lg:h-96">
                             <canvas data-chart="{{ json_encode([
@@ -147,8 +135,6 @@
                                     'labels' => $this->expenseChart['labels'],
                                     'datasets' => [[
                                         'data' => $this->expenseChart['data'],
-                                        'backgroundColor' => $this->expenseChart['colors'],
-                                        'borderWidth' => 0,
                                     ]],
                                 ],
                                 'options' => [
@@ -160,7 +146,6 @@
                                                 'usePointStyle' => true,
                                                 'boxWidth' => 8,
                                                 'padding' => 12,
-                                                'color' => '#111111',
                                             ],
                                         ],
                                     ],
@@ -169,48 +154,52 @@
                         </div>
                     @endif
                 </div>
-            </div>
+            </section>
 
-            <div class="card min-w-0 bg-base-100 shadow-sm ring-1 ring-base-300 lg:col-span-2">
+            <section class="card min-w-0 border border-base-300 bg-base-100 lg:col-span-2">
                 <div class="card-body">
                     <div class="mb-2 flex items-center justify-between gap-2">
-                        <p class="text-xs font-medium text-base-content/50">Transaksi Terbaru</p>
+                        <h2 class="label-struk">Transaksi Terbaru</h2>
                         <a href="{{ route('riwayat', ['period' => $period]) }}" class="hidden items-center gap-1 text-xs font-semibold text-primary hover:underline lg:inline-flex">
                             Lihat semua
                             <i data-lucide="chevron-right" class="size-3.5"></i>
                         </a>
                     </div>
 
-                    <div class="divide-y divide-base-200">
+                    <div class="divide-y divide-base-300">
                         @foreach ($this->recentTransactions as $transaction)
+                            @php $isExpense = $transaction->type->value === 'pengeluaran'; @endphp
                             <button
                                 type="button"
                                 wire:key="recent-{{ $transaction->id }}"
                                 wire:click="$dispatch('open-transaction-form', { transactionId: {{ $transaction->id }} })"
-                                class="flex w-full flex-nowrap items-center gap-3 py-2.5 text-left first:pt-0 last:pb-0"
+                                class="flex w-full flex-nowrap items-center gap-3 py-2.5 text-left transition-colors first:pt-0 last:pb-0 hover:bg-base-200/60"
                             >
-                                <x-category-icon :icon="$transaction->category->icon ?? '💰'" :color="$transaction->category->color ?? '#64748b'" />
+                                <x-category-icon :icon="$transaction->category?->icon" />
                                 <div class="min-w-0 flex-1">
-                                    <p class="truncate text-sm font-medium">{{ $transaction->description ?: $transaction->category->name }}</p>
-                                    <p class="truncate text-xs text-base-content/50">
+                                    <div class="flex items-baseline gap-2">
+                                        <p class="truncate text-sm font-medium">{{ $transaction->description ?: $transaction->category->name }}</p>
+                                        <x-ledger-leader />
+                                        <p class="rupiah shrink-0 text-sm {{ $isExpense ? 'text-error' : 'text-success' }}">
+                                            {{ $isExpense ? '-' : '+' }}{{ $formatRupiah($transaction->amount) }}
+                                        </p>
+                                    </div>
+                                    <p class="truncate text-xs text-neutral">
                                         {{ $transaction->category->name }} &middot; {{ $transaction->transaction_date->translatedFormat('d M') }}
                                     </p>
                                 </div>
-                                <p class="ml-auto shrink-0 text-right text-sm font-semibold tabular-nums whitespace-nowrap {{ $transaction->type->value === 'pengeluaran' ? 'text-error' : 'text-success' }}">
-                                    {{ $transaction->type->value === 'pengeluaran' ? '-' : '+' }}Rp{{ number_format($transaction->amount, 0, ',', '.') }}
-                                </p>
                             </button>
                         @endforeach
                     </div>
                 </div>
-            </div>
+            </section>
         </div>
     @endif
 
     <button
         type="button"
         wire:click="$dispatch('open-transaction-form')"
-        class="btn btn-primary btn-circle btn-lg fixed right-[max(1rem,calc(50%_-_240px_+_1rem))] bottom-24 z-30 border-none shadow-lg shadow-primary/30 md:right-[max(1.5rem,calc(50%_-_384px_+_1.5rem))] lg:hidden"
+        class="btn btn-primary btn-square btn-lg fixed right-[max(1rem,calc(50%_-_240px_+_1rem))] bottom-24 z-30 md:right-[max(1.5rem,calc(50%_-_384px_+_1.5rem))] lg:hidden"
         aria-label="Tambah transaksi"
     >
         <i data-lucide="plus" class="size-6"></i>

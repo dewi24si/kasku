@@ -1,5 +1,6 @@
 @php
     $rupiah = fn (int $amount): string => 'Rp'.number_format($amount, 0, ',', '.');
+    $fontUrl = fn (string $file): string => 'file://'.str_replace(DIRECTORY_SEPARATOR, '/', resource_path('fonts/'.$file));
 @endphp
 <!DOCTYPE html>
 <html lang="id">
@@ -7,33 +8,40 @@
     <meta charset="utf-8">
     <title>Laporan Transaksi - Kasku</title>
     <style>
+        @font-face { font-family: 'IBM Plex Sans'; font-weight: normal; font-style: normal; src: url('{{ $fontUrl('IBMPlexSans-Regular.ttf') }}') format('truetype'); }
+        @font-face { font-family: 'IBM Plex Sans'; font-weight: bold; font-style: normal; src: url('{{ $fontUrl('IBMPlexSans-Bold.ttf') }}') format('truetype'); }
+        @font-face { font-family: 'IBM Plex Mono'; font-weight: normal; font-style: normal; src: url('{{ $fontUrl('IBMPlexMono-Medium.ttf') }}') format('truetype'); }
+
         @page { margin: 32px 36px; }
-        * { font-family: 'DejaVu Sans', sans-serif; }
-        body { font-size: 10px; color: #1f2937; }
-        h1 { font-size: 18px; margin: 0; color: #047857; }
-        h2 { font-size: 12px; margin: 22px 0 8px; color: #111827; }
-        .muted { color: #6b7280; }
-        .header { border-bottom: 2px solid #10b981; padding-bottom: 10px; margin-bottom: 16px; }
+        * { font-family: 'IBM Plex Sans', 'DejaVu Sans', sans-serif; }
+        body { font-size: 10px; color: #16181d; }
+        h1 { font-size: 18px; margin: 0; color: #16181d; }
+        h2 { font-size: 9px; margin: 22px 0 8px; color: #5f6368; font-family: 'IBM Plex Mono', 'DejaVu Sans Mono', monospace; font-weight: normal; }
+        .muted { color: #5f6368; }
+        .header { border-bottom: 1px solid #16181d; padding-bottom: 10px; margin-bottom: 16px; }
         .header table { width: 100%; }
-        .brand { font-size: 10px; color: #6b7280; margin-top: 2px; }
+        .brand { font-size: 10px; color: #5f6368; margin-top: 2px; }
         .filters { margin-top: 6px; }
-        .filters span { display: inline-block; background: #ecfdf5; color: #065f46; border-radius: 8px; padding: 2px 8px; margin: 2px 4px 0 0; }
+        .filters span { display: inline-block; border: 1px solid #e4e2db; color: #16181d; border-radius: 6px; padding: 2px 8px; margin: 2px 4px 0 0; }
         .summary { width: 100%; border-collapse: separate; border-spacing: 8px 0; margin: 0 -8px; }
-        .summary td { width: 33.33%; border: 1px solid #e5e7eb; border-radius: 10px; padding: 10px 12px; }
-        .summary .label { font-size: 9px; color: #6b7280; }
-        .summary .value { font-size: 14px; font-weight: bold; margin-top: 3px; }
-        .income { color: #059669; }
-        .expense { color: #dc2626; }
+        .summary td { width: 33.33%; border: 1px solid #e4e2db; border-radius: 8px; padding: 10px 12px; }
+        .summary .label { font-size: 8px; color: #5f6368; font-family: 'IBM Plex Mono', 'DejaVu Sans Mono', monospace; }
+        .summary .value { font-size: 14px; margin-top: 4px; }
+        .amount, .summary .value { font-family: 'IBM Plex Mono', 'DejaVu Sans Mono', monospace; }
+        .income { color: #0f7b5f; }
+        .expense { color: #c0352b; }
         table.list { width: 100%; border-collapse: collapse; }
-        table.list th { background: #f3f4f6; text-align: left; font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; color: #4b5563; padding: 6px 8px; }
-        table.list td { border-bottom: 1px solid #f3f4f6; padding: 6px 8px; vertical-align: top; }
+        table.list th { border-bottom: 1px solid #16181d; text-align: left; font-size: 8px; color: #5f6368; padding: 6px 8px; font-family: 'IBM Plex Mono', 'DejaVu Sans Mono', monospace; font-weight: normal; }
+        table.list td { border-bottom: 1px dotted #c9c6bd; padding: 6px 8px; vertical-align: top; }
         .right, table.list th.right { text-align: right; }
         .nowrap { white-space: nowrap; }
-        .bar { height: 6px; background: #f3f4f6; border-radius: 3px; }
-        .bar div { height: 6px; background: #10b981; border-radius: 3px; }
-        .empty { text-align: center; padding: 24px; color: #6b7280; border: 1px dashed #d1d5db; border-radius: 10px; }
-        .note { margin-top: 8px; padding: 6px 10px; background: #fffbeb; color: #92400e; border-radius: 8px; }
-        .footer { position: fixed; bottom: -16px; left: 0; right: 0; font-size: 8px; color: #9ca3af; text-align: center; }
+        table.categories td { vertical-align: middle; }
+        /* margin-top mengimbangi ruang descender di kotak baris, supaya batang sejajar dengan tengah huruf. */
+        .bar { margin-top: 3px; height: 5px; background: #f6f5f1; border: 1px solid #e4e2db; border-radius: 2px; }
+        .bar div { height: 5px; background: #0f7b5f; border-radius: 2px; }
+        .empty { text-align: center; padding: 24px; color: #5f6368; border: 1px dashed #c9c6bd; border-radius: 8px; }
+        .note { margin-top: 8px; padding: 6px 10px; border: 1px solid #b45309; color: #b45309; border-radius: 6px; }
+        .footer { position: fixed; bottom: -16px; left: 0; right: 0; font-size: 8px; color: #5f6368; text-align: center; }
     </style>
 </head>
 <body>
@@ -61,15 +69,15 @@
     <table class="summary">
         <tr>
             <td>
-                <div class="label">Total Pemasukan</div>
+                <div class="label">TOTAL PEMASUKAN</div>
                 <div class="value income">{{ $rupiah($summary['pemasukan']) }}</div>
             </td>
             <td>
-                <div class="label">Total Pengeluaran</div>
+                <div class="label">TOTAL PENGELUARAN</div>
                 <div class="value expense">{{ $rupiah($summary['pengeluaran']) }}</div>
             </td>
             <td>
-                <div class="label">Saldo</div>
+                <div class="label">SALDO</div>
                 <div class="value {{ $summary['saldo'] < 0 ? 'expense' : '' }}">
                     {{ $summary['saldo'] < 0 ? '-' : '' }}{{ $rupiah(abs($summary['saldo'])) }}
                 </div>
@@ -78,14 +86,14 @@
     </table>
 
     @if ($expenseByCategory->isNotEmpty())
-        <h2>Pengeluaran per Kategori</h2>
-        <table class="list">
+        <h2>PENGELUARAN PER KATEGORI</h2>
+        <table class="list categories">
             <thead>
                 <tr>
-                    <th>Kategori</th>
-                    <th style="width: 40%;">Porsi</th>
-                    <th class="right">Persen</th>
-                    <th class="right">Jumlah</th>
+                    <th>KATEGORI</th>
+                    <th style="width: 40%;">PORSI</th>
+                    <th class="right">PERSEN</th>
+                    <th class="right">JUMLAH</th>
                 </tr>
             </thead>
             <tbody>
@@ -93,15 +101,15 @@
                     <tr>
                         <td>{{ $row['name'] }}</td>
                         <td><div class="bar"><div style="width: {{ min(100, $row['percentage']) }}%;"></div></div></td>
-                        <td class="right nowrap">{{ number_format($row['percentage'], 1, ',', '.') }}%</td>
-                        <td class="right nowrap">{{ $rupiah($row['total']) }}</td>
+                        <td class="right nowrap amount">{{ number_format($row['percentage'], 1, ',', '.') }}%</td>
+                        <td class="right nowrap amount">{{ $rupiah($row['total']) }}</td>
                     </tr>
                 @endforeach
             </tbody>
         </table>
     @endif
 
-    <h2>Daftar Transaksi ({{ number_format($totalCount, 0, ',', '.') }})</h2>
+    <h2>DAFTAR TRANSAKSI ({{ number_format($totalCount, 0, ',', '.') }})</h2>
 
     @if ($transactions->isEmpty())
         <div class="empty">Tidak ada transaksi yang cocok dengan filter ini.</div>
@@ -109,22 +117,22 @@
         <table class="list">
             <thead>
                 <tr>
-                    <th>Tanggal</th>
-                    <th>Kategori</th>
-                    <th>Deskripsi</th>
-                    <th>Sumber</th>
-                    <th class="right">Jumlah</th>
+                    <th>TANGGAL</th>
+                    <th>KATEGORI</th>
+                    <th>DESKRIPSI</th>
+                    <th>SUMBER</th>
+                    <th class="right">JUMLAH</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach ($transactions as $transaction)
                     @php($isExpense = $transaction->type === \App\TransactionType::Pengeluaran)
                     <tr>
-                        <td class="nowrap">{{ $transaction->transaction_date->translatedFormat('d M Y') }}</td>
+                        <td class="nowrap amount">{{ $transaction->transaction_date->translatedFormat('d M Y') }}</td>
                         <td>{{ $transaction->category?->name ?? '-' }}</td>
                         <td>{{ $transaction->description ?: '-' }}</td>
                         <td>{{ ucfirst($transaction->source->value) }}</td>
-                        <td class="right nowrap {{ $isExpense ? 'expense' : 'income' }}">
+                        <td class="right nowrap amount {{ $isExpense ? 'expense' : 'income' }}">
                             {{ $isExpense ? '-' : '+' }}{{ $rupiah($transaction->amount) }}
                         </td>
                     </tr>

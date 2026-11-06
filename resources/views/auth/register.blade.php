@@ -1,5 +1,6 @@
 <x-layouts.guest title="Daftar - Kasku">
-    <h1 class="mb-6 text-center text-2xl font-bold">Buat Akun Kasku</h1>
+    <p class="label-struk text-center">Akun baru</p>
+    <h1 class="mt-1 mb-6 text-center text-2xl font-bold tracking-tight">Buat Akun Kasku</h1>
 
     <form method="POST" action="{{ route('register') }}" class="space-y-4">
         @csrf
@@ -7,7 +8,7 @@
         <fieldset class="fieldset">
             <legend class="fieldset-legend">Nama</legend>
             <label class="input w-full @error('name') input-error @enderror">
-                <i data-lucide="user" class="size-4 text-base-content/40"></i>
+                <i data-lucide="user" class="size-4 text-neutral"></i>
                 <input
                     id="name"
                     type="text"
@@ -26,7 +27,7 @@
         <fieldset class="fieldset">
             <legend class="fieldset-legend">Email</legend>
             <label class="input w-full @error('email') input-error @enderror">
-                <i data-lucide="mail" class="size-4 text-base-content/40"></i>
+                <i data-lucide="mail" class="size-4 text-neutral"></i>
                 <input
                     id="email"
                     type="email"
@@ -44,7 +45,7 @@
         <fieldset class="fieldset">
             <legend class="fieldset-legend">Kata Sandi</legend>
             <label class="input w-full @error('password') input-error @enderror">
-                <i data-lucide="lock-keyhole" class="size-4 text-base-content/40"></i>
+                <i data-lucide="lock-keyhole" class="size-4 text-neutral"></i>
                 <input
                     id="password"
                     type="password"
@@ -61,7 +62,7 @@
         <fieldset class="fieldset">
             <legend class="fieldset-legend">Konfirmasi Kata Sandi</legend>
             <label class="input w-full">
-                <i data-lucide="lock-keyhole" class="size-4 text-base-content/40"></i>
+                <i data-lucide="lock-keyhole" class="size-4 text-neutral"></i>
                 <input
                     id="password_confirmation"
                     type="password"
@@ -77,7 +78,7 @@
         </button>
     </form>
 
-    <p class="mt-6 text-center text-sm text-base-content/60">
+    <p class="mt-6 text-center text-sm text-neutral">
         Sudah punya akun?
         <a href="{{ route('login') }}" class="link link-primary font-medium">Masuk</a>
     </p>

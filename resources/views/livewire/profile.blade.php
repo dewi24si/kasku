@@ -1,11 +1,11 @@
 <div class="space-y-4 lg:space-y-6">
     <div class="hidden lg:block">
         <h1 class="text-2xl font-bold tracking-tight">Profil</h1>
-        <p class="text-sm text-base-content/50">Kelola akun, tampilan, dan kategorimu</p>
+        <p class="text-sm text-neutral">Kelola akun, tampilan, dan kategorimu</p>
     </div>
 
     <div
-        class="card bg-base-100 shadow-sm ring-1 ring-base-300"
+        class="card border border-base-300 bg-base-100"
         x-data="{
             theme: localStorage.getItem('kasku-theme') || 'auto',
             setTheme(value) {
@@ -24,7 +24,7 @@
 
                 const meta = document.getElementById('theme-color-meta');
                 if (meta) {
-                    meta.setAttribute('content', isDark ? '#0b0f14' : '#ffffff');
+                    meta.setAttribute('content', isDark ? meta.dataset.dark : meta.dataset.light);
                 }
 
                 window.dispatchEvent(new CustomEvent('kasku-theme-changed'));
@@ -41,7 +41,7 @@
                 <button
                     type="button"
                     @click="setTheme('light')"
-                    :class="theme === 'light' ? 'btn-primary' : 'btn-ghost ring-1 ring-base-300'"
+                    :class="theme === 'light' ? 'btn-primary' : 'btn-outline border-base-300 text-base-content'"
                     class="btn btn-sm"
                 >
                     Terang
@@ -49,7 +49,7 @@
                 <button
                     type="button"
                     @click="setTheme('dark')"
-                    :class="theme === 'dark' ? 'btn-primary' : 'btn-ghost ring-1 ring-base-300'"
+                    :class="theme === 'dark' ? 'btn-primary' : 'btn-outline border-base-300 text-base-content'"
                     class="btn btn-sm"
                 >
                     Gelap
@@ -57,7 +57,7 @@
                 <button
                     type="button"
                     @click="setTheme('auto')"
-                    :class="theme === 'auto' ? 'btn-primary' : 'btn-ghost ring-1 ring-base-300'"
+                    :class="theme === 'auto' ? 'btn-primary' : 'btn-outline border-base-300 text-base-content'"
                     class="btn btn-sm"
                 >
                     Otomatis
@@ -68,19 +68,19 @@
 
     <div class="space-y-4 lg:grid lg:grid-cols-2 lg:items-start lg:gap-6 lg:space-y-0">
     <div class="space-y-4 lg:space-y-6">
-    <div class="card bg-base-100 shadow-sm ring-1 ring-base-300">
+    <div class="card border border-base-300 bg-base-100">
         <div class="card-body gap-3">
             <div class="flex items-center gap-3">
-                <span class="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <span class="flex size-12 items-center justify-center rounded-field border border-base-300 bg-base-200 text-base-content">
                     <i data-lucide="user-round" class="size-6"></i>
                 </span>
                 <div class="min-w-0">
                     <p class="truncate font-semibold">{{ $name }}</p>
-                    <p class="truncate text-sm text-base-content/50">{{ $email }}</p>
+                    <p class="truncate text-sm text-neutral">{{ $email }}</p>
                 </div>
             </div>
 
-            <form wire:submit="updateProfile" class="space-y-3 border-t border-base-200 pt-3">
+            <form wire:submit="updateProfile" class="space-y-3 border-t border-base-300 pt-3">
                 <fieldset class="fieldset">
                     <legend class="fieldset-legend">Nama</legend>
                     <input type="text" wire:model="name" class="input w-full">
@@ -102,7 +102,7 @@
         </div>
     </div>
 
-    <div class="card bg-base-100 shadow-sm ring-1 ring-base-300">
+    <div class="card border border-base-300 bg-base-100">
         <div class="card-body gap-3">
             <p class="flex items-center gap-2 text-sm font-semibold">
                 <i data-lucide="lock-keyhole" class="size-4"></i>
@@ -137,7 +137,7 @@
     </div>
     </div>
 
-    <div class="card bg-base-100 shadow-sm ring-1 ring-base-300">
+    <div class="card border border-base-300 bg-base-100">
         <div class="card-body gap-3">
             <div class="flex items-center justify-between">
                 <p class="flex items-center gap-2 text-sm font-semibold">
@@ -151,21 +151,22 @@
             </div>
 
             @if ($this->myCategories->isEmpty())
-                <p class="text-sm text-base-content/50">Belum ada kategori custom. Kategori bawaan sudah tersedia otomatis.</p>
+                <p class="text-sm text-neutral">Belum ada kategori custom. Kategori bawaan sudah tersedia otomatis.</p>
             @else
-                <div class="divide-y divide-base-200">
+                <div class="divide-y divide-base-300">
                     @foreach ($this->myCategories as $category)
                         <div class="flex items-center gap-2 py-2 first:pt-0 last:pb-0">
-                            <x-category-icon :icon="$category->icon ?? '💰'" :color="$category->color ?? '#64748b'" />
+                            <x-category-icon :icon="$category->icon" />
                             <div class="min-w-0 flex-1">
                                 <p class="truncate text-sm font-medium">{{ $category->name }}</p>
-                                <p class="text-xs text-base-content/50">{{ $category->type->value === 'pengeluaran' ? 'Pengeluaran' : 'Pemasukan' }}</p>
+                                <p class="text-xs text-neutral">{{ $category->type->value === 'pengeluaran' ? 'Pengeluaran' : 'Pemasukan' }}</p>
                             </div>
                             <button
                                 type="button"
                                 wire:click="deleteCategory({{ $category->id }})"
                                 wire:confirm="Hapus kategori {{ $category->name }}?"
-                                class="btn btn-xs btn-circle border-none bg-error/15 text-error"
+                                class="btn btn-ghost btn-xs btn-square text-error"
+                                aria-label="Hapus kategori {{ $category->name }}"
                             >
                                 <i data-lucide="trash-2" class="size-3.5"></i>
                             </button>
@@ -178,9 +179,10 @@
     </div>
 
     @if ($showCategoryForm)
-        <div class="fixed inset-0 z-40 flex items-end justify-center bg-black/40 backdrop-blur-sm sm:items-center" wire:click.self="closeCategoryForm">
-            <div class="w-full max-w-sm rounded-t-3xl bg-base-100 p-4 sm:rounded-3xl lg:max-w-md lg:p-6 lg:shadow-xl">
-                <h2 class="mb-4 text-lg font-semibold">Tambah Kategori</h2>
+        <div class="fixed inset-0 z-40 flex items-end justify-center bg-black/40 sm:items-center" wire:click.self="closeCategoryForm">
+            <div class="w-full max-w-sm rounded-t-box border border-base-300 bg-base-100 p-5 sm:rounded-box lg:max-w-md lg:p-6">
+                <p class="label-struk">Kategori baru</p>
+                <h2 class="mt-1 mb-4 text-lg font-semibold">Tambah Kategori</h2>
 
                 <form wire:submit="addCategory" class="space-y-4">
                     <fieldset class="fieldset">
@@ -199,20 +201,27 @@
                         </select>
                     </fieldset>
 
-                    <div class="grid grid-cols-2 gap-3">
-                        <fieldset class="fieldset">
-                            <legend class="fieldset-legend">Ikon (emoji)</legend>
-                            <input type="text" wire:model="categoryIcon" class="input w-full" placeholder="🎮" maxlength="10">
-                        </fieldset>
+                    <fieldset class="fieldset">
+                        <legend class="fieldset-legend">Ikon</legend>
+                        <div class="grid grid-cols-6 gap-2" role="radiogroup" aria-label="Pilih ikon kategori">
+                            @foreach ([null, ...App\CategoryIcon::cases()] as $iconOption)
+                                <label
+                                    class="flex aspect-square cursor-pointer items-center justify-center rounded-field border border-base-300 bg-base-200 text-neutral transition-colors hover:text-base-content has-checked:border-primary has-checked:bg-base-100 has-checked:text-primary has-focus-visible:outline-2 has-focus-visible:outline-primary"
+                                    title="{{ $iconOption?->label() ?? 'Umum' }}"
+                                >
+                                    <input type="radio" wire:model="categoryIcon" value="{{ $iconOption?->value ?? '' }}" class="sr-only">
+                                    <i data-lucide="{{ $iconOption?->lucideName() ?? 'tags' }}" class="size-4"></i>
+                                    <span class="sr-only">{{ $iconOption?->label() ?? 'Umum' }}</span>
+                                </label>
+                            @endforeach
+                        </div>
+                        @error('categoryIcon')
+                            <p class="fieldset-label text-error">{{ $message }}</p>
+                        @enderror
+                    </fieldset>
 
-                        <fieldset class="fieldset">
-                            <legend class="fieldset-legend">Warna</legend>
-                            <input type="color" wire:model="categoryColor" class="input w-full p-1">
-                        </fieldset>
-                    </div>
-
-                    <div class="flex gap-2">
-                        <button type="button" wire:click="closeCategoryForm" class="btn btn-ghost flex-1">Batal</button>
+                    <div class="flex gap-2 border-t border-base-300 pt-4">
+                        <button type="button" wire:click="closeCategoryForm" class="btn btn-outline flex-1 border-base-300">Batal</button>
                         <button type="submit" class="btn btn-primary flex-1">Simpan</button>
                     </div>
                 </form>

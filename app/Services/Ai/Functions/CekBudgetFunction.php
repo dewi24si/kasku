@@ -45,7 +45,7 @@ class CekBudgetFunction implements AiFunction
 
         if ($budgets->isEmpty()) {
             return AiFunctionResult::success(
-                message: '📋 Belum ada budget yang diset untuk periode ini.',
+                message: 'Belum ada budget yang diset untuk periode ini.',
                 attachment: ['type' => 'budget', 'action' => 'check', 'budgets' => []],
                 logPayload: ['period' => $period, 'count' => 0],
             );
@@ -74,8 +74,8 @@ class CekBudgetFunction implements AiFunction
 
         $warningCount = $rows->where('status', 'warning')->count();
         $message = $warningCount > 0
-            ? "⚠️ {$warningCount} dari {$rows->count()} budget sudah melewati batas peringatan."
-            : "✅ Semua budget ({$rows->count()}) masih aman.";
+            ? "Peringatan: {$warningCount} dari {$rows->count()} budget sudah melewati batas peringatan."
+            : "Semua budget ({$rows->count()}) masih aman.";
 
         return AiFunctionResult::success(
             message: $message,

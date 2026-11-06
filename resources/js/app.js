@@ -54,6 +54,8 @@ import {
 } from 'lucide';
 import Chart from 'chart.js/auto';
 
+Chart.defaults.font.family = "'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif";
+
 const icons = {
     ArrowDownRight,
     ArrowUpRight,
@@ -124,28 +126,50 @@ function isDarkMode() {
     return window.matchMedia('(prefers-color-scheme: dark)').matches;
 }
 
+/**
+ * Palet grafik gaya Buku Kas: gradasi dari warna aksen emerald ke abu-abu.
+ * Warna per kategori dari database sengaja tidak dipakai supaya hanya ada satu warna aksen.
+ */
+const chartPalettes = {
+    light: ['#0f7b5f', '#3d957b', '#6fb19b', '#a3cdbd', '#5f6368', '#85898e', '#adb0b4', '#d3d5d7'],
+    dark: ['#3dd6a3', '#2fae86', '#25876a', '#1c624f', '#9aa0a6', '#7b8187', '#5e6368', '#43474c'],
+};
+
 function chartThemeColors() {
     const dark = isDarkMode();
 
     return {
-        legend: dark ? '#e6e8eb' : '#111111',
-        border: dark ? '#151b23' : '#ffffff',
+        legend: dark ? '#eceae4' : '#16181d',
+        border: dark ? '#1a1d20' : '#ffffff',
+        palette: dark ? chartPalettes.dark : chartPalettes.light,
     };
 }
 
+function paletteColor(palette, index) {
+    return palette[index % palette.length];
+}
+
+function applyDatasetColors(datasets, { border, palette }) {
+    datasets.forEach((dataset, datasetIndex) => {
+        dataset.backgroundColor =
+            datasets.length === 1
+                ? (dataset.data ?? []).map((_, index) => paletteColor(palette, index))
+                : paletteColor(palette, datasetIndex);
+        dataset.borderColor = border;
+        dataset.borderWidth = 2;
+    });
+}
+
 function applyChartTheme(config) {
-    const { legend, border } = chartThemeColors();
+    const theme = chartThemeColors();
 
     config.options = config.options ?? {};
     config.options.plugins = config.options.plugins ?? {};
     config.options.plugins.legend = config.options.plugins.legend ?? {};
     config.options.plugins.legend.labels = config.options.plugins.legend.labels ?? {};
-    config.options.plugins.legend.labels.color = legend;
+    config.options.plugins.legend.labels.color = theme.legend;
 
-    (config.data.datasets ?? []).forEach((dataset) => {
-        dataset.borderColor = border;
-        dataset.borderWidth = 2;
-    });
+    applyDatasetColors(config.data.datasets ?? [], theme);
 
     return config;
 }
@@ -166,14 +190,11 @@ function initCharts() {
 }
 
 function refreshChartsTheme() {
-    const { legend, border } = chartThemeColors();
+    const theme = chartThemeColors();
 
     chartInstances.forEach((chart) => {
-        chart.options.plugins.legend.labels.color = legend;
-        chart.data.datasets.forEach((dataset) => {
-            dataset.borderColor = border;
-            dataset.borderWidth = 2;
-        });
+        chart.options.plugins.legend.labels.color = theme.legend;
+        applyDatasetColors(chart.data.datasets, theme);
         chart.update();
     });
 }

@@ -14,7 +14,7 @@
 
             var meta = document.getElementById('theme-color-meta');
             if (meta) {
-                meta.setAttribute('content', dark ? '#0b0f14' : '#ffffff');
+                meta.setAttribute('content', dark ? meta.dataset.dark : meta.dataset.light);
             }
         } catch (e) {}
     })();

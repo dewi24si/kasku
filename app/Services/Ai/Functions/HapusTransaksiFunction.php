@@ -50,7 +50,7 @@ class HapusTransaksiFunction implements RequiresConfirmation
 
         $transaction->delete();
 
-        $message = '🗑️ Transaksi berhasil dihapus: '.$card['category']['name'].', '.$this->formatRupiah($card['amount']).' pada '.$transaction->transaction_date->translatedFormat('d M Y').'.';
+        $message = 'Transaksi berhasil dihapus: '.$card['category']['name'].', '.$this->formatRupiah($card['amount']).' pada '.$transaction->transaction_date->translatedFormat('d M Y').'.';
 
         return AiFunctionResult::success(
             message: $message,

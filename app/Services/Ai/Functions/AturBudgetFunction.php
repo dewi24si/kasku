@@ -51,7 +51,7 @@ class AturBudgetFunction implements AiFunction
         $budget->load('category');
         $periodLabel = Carbon::createFromFormat('Y-m-d', "{$args['period']}-01")->translatedFormat('F Y');
 
-        $message = "✅ Budget {$budget->category->name} untuk {$periodLabel} diset ".$this->formatRupiah($budget->amount)." (peringatan di {$budget->alert_threshold}%).";
+        $message = "Budget {$budget->category->name} untuk {$periodLabel} diset ".$this->formatRupiah($budget->amount)." (peringatan di {$budget->alert_threshold}%).";
 
         return AiFunctionResult::success(
             message: $message,

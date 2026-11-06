@@ -66,7 +66,7 @@ class RingkasanFunction implements AiFunction
 
         $periodLabel = Carbon::createFromFormat('Y-m-d', "{$period}-01")->translatedFormat('F Y');
 
-        $message = "📊 Ringkasan {$periodLabel}: pemasukan ".$this->formatRupiah($totalPemasukan).', pengeluaran '.$this->formatRupiah($totalPengeluaran).', saldo '.$this->formatRupiah($saldo).'.';
+        $message = "Ringkasan {$periodLabel}: pemasukan ".$this->formatRupiah($totalPemasukan).', pengeluaran '.$this->formatRupiah($totalPengeluaran).', saldo '.$this->formatRupiah($saldo).'.';
 
         return AiFunctionResult::success(
             message: $message,
