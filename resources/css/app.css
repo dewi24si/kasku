@@ -141,9 +141,24 @@
     animation: pop-in 0.25s ease-out both;
 }
 
-/* Navigasi bawah gaya Buku Kas: penanda menu aktif berupa garis 2px di tepi atas dock. */
+/*
+ * Navigasi bawah gaya Buku Kas: penanda menu aktif berupa garis 2px di tepi atas dock.
+ * Item dock dibuat mengisi penuh tinggi dock (tanpa padding atas dan margin bawah bawaan daisyUI), jadi tepi atas
+ * item selalu tepat di bawah border-t dock. Garis cukup diletakkan di top: 0 item, tidak bergantung pada padding
+ * atau safe area iOS. Safe area tetap diberikan lewat padding-bottom bawaan dock.
+ */
+.dock {
+    padding-top: 0;
+    align-items: stretch;
+}
+
+.dock > :not(:where(script, style, template)) {
+    height: auto;
+    margin-bottom: 0;
+}
+
 .dock > [aria-current='page']::after {
-    top: -0.5rem;
+    top: 0;
     bottom: auto;
     width: 2.5rem;
     height: 2px;
