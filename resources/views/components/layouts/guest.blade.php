@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $title ?? 'Kasku' }}</title>
+    @include('partials.social-meta')
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#f6f5f1" id="theme-color-meta" data-light="#f6f5f1" data-dark="#111315">
     <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32.png?v=2">
