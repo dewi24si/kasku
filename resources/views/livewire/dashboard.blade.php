@@ -1,4 +1,4 @@
-<div class="space-y-4 lg:space-y-6">
+<div class="space-y-4 pb-20 lg:space-y-6 lg:pb-0">
     @php
         $formatRupiah = fn (int $amount): string => \App\Services\Format\Rupiah::format($amount);
     @endphp
@@ -173,12 +173,10 @@
         </div>
     @endif
 
-    <x-install-guide variant="banner" class="mb-16 lg:mb-0" />
-
     <button
         type="button"
         wire:click="$dispatch('open-transaction-form')"
-        class="btn btn-primary btn-square btn-lg fixed right-[max(1rem,calc(50%_-_240px_+_1rem))] bottom-24 z-30 md:right-[max(1.5rem,calc(50%_-_384px_+_1.5rem))] lg:hidden"
+        class="btn btn-primary btn-square btn-lg fixed right-[max(1rem,calc(50%_-_240px_+_1rem))] bottom-[calc(6rem+var(--install-popup-offset,0px))] z-30 transition-[bottom] duration-300 motion-reduce:transition-none md:right-[max(1.5rem,calc(50%_-_384px_+_1.5rem))] lg:hidden"
         aria-label="Tambah transaksi"
     >
         <i data-lucide="plus" class="size-6"></i>

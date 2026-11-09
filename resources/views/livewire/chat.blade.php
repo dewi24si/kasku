@@ -102,6 +102,7 @@
                 type="text"
                 wire:model="message"
                 x-ref="messageInput"
+                data-chat-input
                 placeholder="Tulis pesan atau lampirkan foto..."
                 autocomplete="off"
                 class="input flex-1 border-base-300 bg-base-200"

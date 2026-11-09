@@ -112,6 +112,8 @@
         </div>
     </div>
 
+    <x-install-guide variant="popup" />
+
     @livewireScripts
 </body>
 </html>

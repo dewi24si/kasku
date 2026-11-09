@@ -226,7 +226,19 @@ function voiceInput() {
  * beforeinstallprompt bisa terpicu sebelum Alpine siap, jadi event-nya ditangkap dan disimpan di sini dulu.
  */
 const INSTALL_DISMISSED_KEY = 'kasku-install-dismissed';
+const INSTALL_LATER_KEY = 'kasku-install-later-at';
+const INSTALL_SHOWN_SESSION_KEY = 'kasku-install-popup-shown';
+const INSTALL_POPUP_DELAY_MS = 3000;
+const INSTALL_LATER_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
+const INSTALL_POPUP_OFFSET_PROPERTY = '--install-popup-offset';
+
 let deferredInstallPrompt = null;
+
+/*
+ * Cadangan kalau sessionStorage tidak bisa dipakai. Variabel modul tetap hidup selama pindah halaman lewat
+ * wire:navigate, jadi pop-up tetap tidak muncul dobel.
+ */
+let installPopupShownThisSession = false;
 
 window.addEventListener('beforeinstallprompt', (event) => {
     event.preventDefault();
@@ -256,61 +268,125 @@ function isAppleSafari() {
     return /Safari/.test(userAgent) && !/CriOS|FxiOS|EdgiOS|OPiOS|GSA|YaBrowser|DuckDuckGo|Instagram|FBAN|FBAV|Line\//i.test(userAgent);
 }
 
-function readInstallDismissed() {
+function readStorage(storageName, key) {
     try {
-        return localStorage.getItem(INSTALL_DISMISSED_KEY) === '1';
+        return window[storageName].getItem(key);
     } catch (error) {
-        return false;
+        return null;
     }
 }
 
+function writeStorage(storageName, key, value) {
+    try {
+        window[storageName].setItem(key, value);
+    } catch (error) {
+        // Mode privat atau storage penuh: status hanya berlaku sampai halaman dimuat ulang.
+    }
+}
+
+function isInstallDismissedForever() {
+    return readStorage('localStorage', INSTALL_DISMISSED_KEY) === '1';
+}
+
+function isInstallPostponed() {
+    const laterAt = Number(readStorage('localStorage', INSTALL_LATER_KEY));
+
+    return Number.isFinite(laterAt) && laterAt > 0 && Date.now() - laterAt < INSTALL_LATER_DURATION_MS;
+}
+
+function wasInstallPopupShownThisSession() {
+    return installPopupShownThisSession || readStorage('sessionStorage', INSTALL_SHOWN_SESSION_KEY) === '1';
+}
+
+function markInstallPopupShownThisSession() {
+    installPopupShownThisSession = true;
+    writeStorage('sessionStorage', INSTALL_SHOWN_SESSION_KEY, '1');
+}
+
+function isChatInputFocused() {
+    return document.activeElement?.matches('[data-chat-input]') === true;
+}
+
 /**
- * @param {boolean} dismissible true untuk banner dashboard (bisa ditutup), false untuk kartu di Profil.
+ * @param {boolean} isPopup true untuk pop-up di layout app, false untuk kartu di Profil.
  */
-function installGuide(dismissible = false) {
+function installGuide(isPopup = false) {
     return {
         mode: 'hidden',
-        dismissible,
-        dismissed: false,
+        isPopup,
         visible: false,
+        popupDelayPassed: false,
+        hiddenForChatInput: false,
+        cleanupCallbacks: [],
 
         init() {
             if (isRunningAsInstalledApp()) {
-                this.setMode('installed');
+                this.mode = 'installed';
 
                 return;
             }
 
-            this.dismissed = dismissible && readInstallDismissed();
-            this.setMode(this.detectMode());
+            this.mode = this.detectMode();
 
-            window.addEventListener('kasku-install-changed', () => {
+            this.listen(window, 'kasku-install-changed', () => {
                 if (this.mode !== 'installed') {
-                    this.setMode(this.detectMode());
+                    this.mode = this.detectMode();
+                    this.refresh();
                 }
             });
-            window.addEventListener('kasku-installed', () => {
-                this.setMode('installed');
+            this.listen(window, 'kasku-installed', () => {
+                this.mode = 'installed';
+                this.hide();
             });
-        },
 
-        setMode(mode) {
-            this.mode = mode;
-            this.updateVisibility();
+            if (!isPopup) {
+                this.visible = true;
+
+                return;
+            }
+
+            if (this.isPopupBlocked()) {
+                return;
+            }
+
+            const delayTimer = window.setTimeout(() => {
+                this.popupDelayPassed = true;
+                this.refresh();
+            }, INSTALL_POPUP_DELAY_MS);
+            this.cleanupCallbacks.push(() => window.clearTimeout(delayTimer));
+
+            this.listen(document, 'focusin', () => {
+                if (this.visible && isChatInputFocused()) {
+                    this.hiddenForChatInput = true;
+                    this.hide();
+                }
+            });
+            this.listen(document, 'focusout', () => {
+                // Tunggu fokus pindah dulu supaya document.activeElement sudah terbarui.
+                window.setTimeout(() => this.refresh(), 0);
+            });
+
+            const resizeObserver = new ResizeObserver(() => this.updatePopupOffset());
+            resizeObserver.observe(this.$el);
+            this.cleanupCallbacks.push(() => resizeObserver.disconnect());
         },
 
         /*
-         * Banner (dismissible) tidak tampil di browser yang belum mendukung pemasangan; kartu Profil selalu tampil
-         * kecuali Kasku sudah terpasang.
+         * Dipanggil Alpine saat elemen dibuang, misalnya ketika pindah halaman lewat wire:navigate,
+         * supaya timer dan listener lama tidak memunculkan pop-up dobel.
          */
-        updateVisibility() {
-            if (this.mode === 'installed' || this.mode === 'hidden') {
-                this.visible = false;
-            } else if (this.dismissible) {
-                this.visible = !this.dismissed && this.mode !== 'unsupported';
-            } else {
-                this.visible = true;
+        destroy() {
+            this.cleanupCallbacks.forEach((cleanup) => cleanup());
+            this.cleanupCallbacks = [];
+
+            if (isPopup) {
+                document.documentElement.style.removeProperty(INSTALL_POPUP_OFFSET_PROPERTY);
             }
+        },
+
+        listen(target, eventName, handler) {
+            target.addEventListener(eventName, handler);
+            this.cleanupCallbacks.push(() => target.removeEventListener(eventName, handler));
         },
 
         detectMode() {
@@ -325,6 +401,56 @@ function installGuide(dismissible = false) {
             return 'unsupported';
         },
 
+        isPopupBlocked() {
+            return isInstallDismissedForever() || isInstallPostponed() || (wasInstallPopupShownThisSession() && !this.hiddenForChatInput);
+        },
+
+        refresh() {
+            if (this.mode === 'installed' || this.mode === 'hidden') {
+                this.hide();
+
+                return;
+            }
+
+            if (!isPopup) {
+                this.visible = true;
+
+                return;
+            }
+
+            if (this.mode === 'unsupported') {
+                this.hide();
+
+                return;
+            }
+
+            if (this.visible || !this.popupDelayPassed || isChatInputFocused() || this.isPopupBlocked()) {
+                return;
+            }
+
+            this.hiddenForChatInput = false;
+            this.visible = true;
+            markInstallPopupShownThisSession();
+            this.$nextTick(() => this.updatePopupOffset());
+        },
+
+        hide() {
+            this.visible = false;
+            this.updatePopupOffset();
+        },
+
+        /*
+         * Tinggi pop-up dibagikan lewat CSS variable supaya tombol + di Dashboard bisa naik dan tidak tertumpuk.
+         */
+        updatePopupOffset() {
+            if (!isPopup) {
+                return;
+            }
+
+            const offset = this.visible ? this.$el.offsetHeight + 12 : 0;
+            document.documentElement.style.setProperty(INSTALL_POPUP_OFFSET_PROPERTY, `${offset}px`);
+        },
+
         async install() {
             const promptEvent = deferredInstallPrompt;
 
@@ -337,19 +463,25 @@ function installGuide(dismissible = false) {
             promptEvent.prompt();
             const { outcome } = await promptEvent.userChoice;
 
-            this.setMode(outcome === 'accepted' ? 'installed' : this.detectMode());
+            if (outcome === 'accepted') {
+                this.mode = 'installed';
+                this.hide();
+            } else {
+                this.mode = this.detectMode();
+                this.refresh();
+            }
+
             window.dispatchEvent(new CustomEvent('kasku-install-changed'));
         },
 
-        dismiss() {
-            this.dismissed = true;
-            this.updateVisibility();
+        later() {
+            writeStorage('localStorage', INSTALL_LATER_KEY, String(Date.now()));
+            this.hide();
+        },
 
-            try {
-                localStorage.setItem(INSTALL_DISMISSED_KEY, '1');
-            } catch (error) {
-                // Mode privat atau storage penuh: banner tetap tertutup sampai halaman dimuat ulang.
-            }
+        dismiss() {
+            writeStorage('localStorage', INSTALL_DISMISSED_KEY, '1');
+            this.hide();
         },
     };
 }
