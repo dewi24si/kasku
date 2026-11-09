@@ -101,6 +101,80 @@ class TransactionHistoryTest extends TestCase
         $this->assertSame(1, $component->get('transactions')->total());
     }
 
+    public function test_page_without_filters_renders_all_categories_option_as_selected(): void
+    {
+        $user = User::factory()->create();
+        $category = Category::factory()->create(['user_id' => $user->id, 'name' => 'Jajan', 'type' => TransactionType::Pengeluaran]);
+
+        $this->actingAs($user)->get('/riwayat')
+            ->assertOk()
+            ->assertSeeHtml('<option value="" selected>Semua Kategori</option>')
+            ->assertSeeHtml('<option value="'.$category->id.'" >Jajan</option>');
+
+        Livewire::actingAs($user)->test(TransactionHistory::class)
+            ->assertSet('categoryId', '')
+            ->assertSet('hasActiveFilters', false);
+    }
+
+    public function test_category_filter_from_url_narrows_results_and_is_kept_in_export_links(): void
+    {
+        $user = User::factory()->create();
+        $categoryA = Category::factory()->create(['user_id' => $user->id, 'name' => 'Jajan', 'type' => TransactionType::Pengeluaran]);
+        $categoryB = Category::factory()->create(['user_id' => $user->id, 'type' => TransactionType::Pengeluaran]);
+
+        Transaction::factory()->create(['user_id' => $user->id, 'category_id' => $categoryA->id, 'description' => 'Cilok depan kampus']);
+        Transaction::factory()->create(['user_id' => $user->id, 'category_id' => $categoryB->id, 'description' => 'Bensin motor']);
+
+        $this->actingAs($user)->get('/riwayat?categoryId='.$categoryA->id)
+            ->assertOk()
+            ->assertSee('Cilok depan kampus')
+            ->assertDontSee('Bensin motor')
+            ->assertSeeHtml('<option value="'.$categoryA->id.'" selected>Jajan</option>')
+            ->assertDontSeeHtml('<option value="" selected>Semua Kategori</option>');
+
+        $component = Livewire::withQueryParams(['categoryId' => (string) $categoryA->id])
+            ->actingAs($user)
+            ->test(TransactionHistory::class)
+            ->assertSet('categoryId', (string) $categoryA->id)
+            ->assertSet('hasActiveFilters', true)
+            ->assertSeeHtml(e(route('riwayat.ekspor', ['category_id' => $categoryA->id])));
+
+        $this->assertSame(1, $component->get('transactions')->total());
+    }
+
+    public function test_non_numeric_category_from_url_is_treated_as_all_categories(): void
+    {
+        $user = User::factory()->create();
+        $category = Category::factory()->create(['user_id' => $user->id, 'type' => TransactionType::Pengeluaran]);
+        Transaction::factory()->count(2)->create(['user_id' => $user->id, 'category_id' => $category->id]);
+
+        $this->actingAs($user)->get('/riwayat?categoryId=abc')
+            ->assertOk()
+            ->assertSeeHtml('<option value="" selected>Semua Kategori</option>');
+
+        $component = Livewire::withQueryParams(['categoryId' => 'abc'])
+            ->actingAs($user)
+            ->test(TransactionHistory::class)
+            ->assertSet('categoryId', '')
+            ->assertSet('hasActiveFilters', false);
+
+        $this->assertSame(2, $component->get('transactions')->total());
+    }
+
+    public function test_reset_filters_returns_category_to_all_categories(): void
+    {
+        $user = User::factory()->create();
+        $category = Category::factory()->create(['user_id' => $user->id, 'type' => TransactionType::Pengeluaran]);
+
+        Livewire::actingAs($user)->test(TransactionHistory::class)
+            ->set('categoryId', (string) $category->id)
+            ->assertSet('hasActiveFilters', true)
+            ->call('resetFilters')
+            ->assertSet('categoryId', '')
+            ->assertSet('hasActiveFilters', false)
+            ->assertSeeHtml('<option value="" selected>Semua Kategori</option>');
+    }
+
     public function test_period_filter_narrows_results(): void
     {
         $user = User::factory()->create();

@@ -27,11 +27,16 @@ class TransactionHistory extends Component
     #[Url(except: '')]
     public string $type = '';
 
-    #[Url(except: null)]
-    public ?int $categoryId = null;
+    #[Url(except: '')]
+    public string $categoryId = '';
 
     #[Url(except: '')]
     public string $period = '';
+
+    public function mount(): void
+    {
+        $this->categoryId = $this->normalizeCategoryId($this->categoryId);
+    }
 
     public function updatedSearch(): void
     {
@@ -45,6 +50,7 @@ class TransactionHistory extends Component
 
     public function updatedCategoryId(): void
     {
+        $this->categoryId = $this->normalizeCategoryId($this->categoryId);
         $this->resetPage();
     }
 
@@ -62,7 +68,7 @@ class TransactionHistory extends Component
     #[Computed]
     public function hasActiveFilters(): bool
     {
-        return $this->search !== '' || $this->type !== '' || $this->categoryId !== null || $this->period !== '';
+        return $this->search !== '' || $this->type !== '' || $this->categoryId !== '' || $this->period !== '';
     }
 
     /**
@@ -93,6 +99,16 @@ class TransactionHistory extends Component
     }
 
     /**
+     * Filter kategori sebagai ID angka, atau null kalau tidak sedang disaring.
+     */
+    public function selectedCategoryId(): ?int
+    {
+        $categoryId = $this->normalizeCategoryId($this->categoryId);
+
+        return $categoryId !== '' ? (int) $categoryId : null;
+    }
+
+    /**
      * @return array{search: string, type: string, category_id: ?int, period: string}
      */
     private function filters(): array
@@ -100,9 +116,17 @@ class TransactionHistory extends Component
         return [
             'search' => $this->search,
             'type' => $this->type,
-            'category_id' => $this->categoryId,
+            'category_id' => $this->selectedCategoryId(),
             'period' => $this->period,
         ];
+    }
+
+    /**
+     * Nilai yang bukan ID angka positif (misalnya dari URL yang diketik manual) dianggap "Semua Kategori".
+     */
+    private function normalizeCategoryId(string $categoryId): string
+    {
+        return preg_match('/^[1-9]\d{0,18}$/', $categoryId) === 1 ? $categoryId : '';
     }
 
     #[On('transaction-saved')]

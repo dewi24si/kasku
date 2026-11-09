@@ -18,9 +18,9 @@
             </select>
 
             <select wire:model.live="categoryId" class="select select-sm w-full lg:w-40" aria-label="Filter kategori">
-                <option value="">Semua Kategori</option>
+                <option value="" @selected($categoryId === '')>Semua Kategori</option>
                 @foreach ($this->categories as $category)
-                    <option value="{{ $category->id }}">{{ $category->name }}</option>
+                    <option value="{{ $category->id }}" @selected($categoryId === (string) $category->id)>{{ $category->name }}</option>
                 @endforeach
             </select>
         </div>
@@ -42,7 +42,7 @@
         </select>
 
         @php
-            $exportFilters = array_filter(['search' => $search, 'type' => $type, 'category_id' => $categoryId, 'period' => $period], 'filled');
+            $exportFilters = array_filter(['search' => $search, 'type' => $type, 'category_id' => $this->selectedCategoryId(), 'period' => $period], 'filled');
         @endphp
         <div>
             <p class="mb-1.5 text-xs text-neutral lg:hidden">
