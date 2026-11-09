@@ -5,7 +5,7 @@ namespace App\Services\Ai;
 class FunctionDefinitions
 {
     /**
-     * Claude `tools` definitions for the 8 Kasku AI functions.
+     * Claude `tools` definitions for the 11 Kasku AI functions.
      *
      * @return array<int, array<string, mixed>>
      */
@@ -132,6 +132,42 @@ class FunctionDefinitions
                         'period' => ['type' => 'string', 'description' => 'Format YYYY-MM, default bulan ini.'],
                         'category_id' => ['type' => 'integer'],
                     ],
+                ],
+            ],
+            [
+                'name' => 'atur_transaksi_rutin',
+                'description' => 'Membuat aturan transaksi rutin bulanan yang otomatis dicatat tiap bulan di tanggal tertentu. Gunakan ketika user bilang "tiap tanggal X", "setiap bulan tanggal X", atau "rutin tiap bulan", misalnya "tiap tanggal 1 catat bayar kos 800rb" atau "gaji masuk tiap tanggal 25 3,5jt". Dieksekusi langsung tanpa konfirmasi. Kalau tanggalnya hari ini, transaksi hari ini ikut langsung dicatat.',
+                'input_schema' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'type' => ['type' => 'string', 'enum' => ['pemasukan', 'pengeluaran']],
+                        'category_id' => ['type' => 'integer', 'description' => 'ID kategori dari daftar kategori yang diberikan, dengan tipe yang sama.'],
+                        'amount' => ['type' => 'integer', 'description' => 'Jumlah dalam Rupiah, tanpa desimal. "800rb" = 800000, "3,5jt" = 3500000.'],
+                        'description' => ['type' => 'string', 'description' => 'Keterangan singkat, misalnya "Bayar kos" atau "Gaji".'],
+                        'day_of_month' => ['type' => 'integer', 'description' => 'Tanggal tiap bulan, 1-31. Tanggal 29-31 otomatis jatuh ke hari terakhir di bulan yang lebih pendek.'],
+                    ],
+                    'required' => ['type', 'category_id', 'amount', 'description', 'day_of_month'],
+                ],
+            ],
+            [
+                'name' => 'lihat_transaksi_rutin',
+                'description' => 'Menampilkan daftar transaksi rutin bulanan milik user beserta jadwalnya. Gunakan ketika user menanyakan transaksi rutin/otomatis apa saja yang sudah diatur.',
+                'input_schema' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'include_inactive' => ['type' => 'boolean', 'description' => 'Sertakan aturan yang sudah nonaktif. Default false.'],
+                    ],
+                ],
+            ],
+            [
+                'name' => 'nonaktifkan_transaksi_rutin',
+                'description' => 'Menghentikan satu transaksi rutin supaya tidak dicatat lagi bulan-bulan berikutnya. Harus merujuk recurring_transaction_id dari daftar transaksi rutin yang diberikan. TIDAK langsung dieksekusi, akan diminta konfirmasi ke user. Transaksi yang sudah tercatat tidak ikut terhapus.',
+                'input_schema' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'recurring_transaction_id' => ['type' => 'integer', 'description' => 'ID transaksi rutin yang aktif, dari daftar transaksi rutin.'],
+                    ],
+                    'required' => ['recurring_transaction_id'],
                 ],
             ],
         ];

@@ -78,6 +78,11 @@
                 <span>Di iPhone dan iPad, Kasku hanya bisa dipasang lewat Safari. Buka <strong class="font-semibold text-base-content">{{ $host }}</strong> di Safari, lalu pilih <strong class="font-semibold text-base-content">Tambahkan ke Layar Utama</strong>.</span>
             </p>
 
+            {{-- Browser yang belum mendukung pemasangan: di kartu Profil, atau pop-up yang dibuka manual dari checklist --}}
+            <p x-show="mode === 'unsupported'" class="mt-1 text-sm text-neutral">
+                Buka <strong class="font-semibold text-base-content">{{ $host }}</strong> lewat Chrome di Android atau Safari di iPhone, lalu pilih <strong class="font-semibold text-base-content">Pasang aplikasi</strong> atau <strong class="font-semibold text-base-content">Tambahkan ke Layar Utama</strong>.
+            </p>
+
             @if ($isPopup)
                 <div class="mt-3 flex flex-wrap items-center gap-2">
                     <button type="button" x-show="mode === 'prompt'" x-on:click="install()" class="btn btn-primary btn-sm">
@@ -86,11 +91,6 @@
                     </button>
                     <button type="button" x-on:click="later()" class="btn btn-ghost btn-sm text-neutral">Nanti saja</button>
                 </div>
-            @else
-                {{-- Browser yang belum mendukung pemasangan: hanya tampil di kartu Profil --}}
-                <p x-show="mode === 'unsupported'" class="mt-1 text-sm text-neutral">
-                    Buka <strong class="font-semibold text-base-content">{{ $host }}</strong> lewat Chrome di Android atau Safari di iPhone, lalu pilih <strong class="font-semibold text-base-content">Pasang aplikasi</strong> atau <strong class="font-semibold text-base-content">Tambahkan ke Layar Utama</strong>.
-                </p>
             @endif
         </div>
 

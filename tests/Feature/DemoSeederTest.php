@@ -6,6 +6,7 @@ use App\Models\AiFunctionLog;
 use App\Models\Budget;
 use App\Models\Category;
 use App\Models\ChatMessage;
+use App\Models\RecurringTransaction;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Services\Insight\SpendingInsights;
@@ -80,6 +81,35 @@ class DemoSeederTest extends TestCase
         $this->assertSame(1, User::query()->where('email', DemoSeeder::DEMO_EMAIL)->count());
         $this->assertSame($counts, $this->countsFor($demo));
         $this->assertSame(12, Category::query()->whereNull('user_id')->count());
+    }
+
+    public function test_creates_two_recurring_rules_starting_next_month(): void
+    {
+        $this->travelTo('2026-11-20 10:00:00');
+
+        $this->seed(DemoSeeder::class);
+        $this->seed(DemoSeeder::class);
+
+        $demo = User::query()->where('email', DemoSeeder::DEMO_EMAIL)->firstOrFail();
+        $rules = RecurringTransaction::query()->where('user_id', $demo->id)->with('category')->orderBy('description')->get();
+
+        $this->assertSame(['Bayar kos', 'Uang bulanan'], $rules->pluck('description')->all());
+
+        [$rent, $allowance] = $rules->all();
+        $this->assertSame(TransactionType::Pengeluaran, $rent->type);
+        $this->assertSame(800_000, $rent->amount);
+        $this->assertSame('Tagihan', $rent->category->name);
+        $this->assertSame(TransactionType::Pemasukan, $allowance->type);
+        $this->assertSame(1_500_000, $allowance->amount);
+        $this->assertSame('Uang Saku', $allowance->category->name);
+
+        foreach ($rules as $rule) {
+            $this->assertSame(1, $rule->day_of_month);
+            $this->assertTrue($rule->is_active);
+            $this->assertSame('2026-12-01', $rule->next_run_date->toDateString());
+        }
+
+        $this->artisan('kasku:proses-transaksi-rutin')->expectsOutputToContain('0 transaksi rutin dicatat');
     }
 
     public function test_does_not_touch_other_users_data(): void
@@ -157,6 +187,7 @@ class DemoSeederTest extends TestCase
             'budgets' => Budget::query()->where('user_id', $user->id)->count(),
             'chat_messages' => ChatMessage::query()->where('user_id', $user->id)->count(),
             'ai_function_logs' => AiFunctionLog::query()->where('user_id', $user->id)->count(),
+            'recurring_transactions' => RecurringTransaction::query()->where('user_id', $user->id)->count(),
         ];
     }
 }

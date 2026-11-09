@@ -7,11 +7,12 @@ use Tests\TestCase;
 
 class FunctionDefinitionsTest extends TestCase
 {
-    public function test_defines_all_eight_functions(): void
+    public function test_defines_all_eleven_functions(): void
     {
         $this->assertSame([
             'tambah_transaksi', 'ubah_transaksi', 'hapus_transaksi', 'cari_transaksi',
             'ringkasan', 'tampilkan_grafik', 'atur_budget', 'cek_budget',
+            'atur_transaksi_rutin', 'lihat_transaksi_rutin', 'nonaktifkan_transaksi_rutin',
         ], FunctionDefinitions::names());
     }
 

@@ -47,10 +47,13 @@
             @enderror
         </fieldset>
 
-        <label class="fieldset-label cursor-pointer">
-            <input type="checkbox" name="remember" class="checkbox checkbox-sm">
-            Ingat saya
-        </label>
+        <div class="flex items-center justify-between gap-3">
+            <label class="fieldset-label cursor-pointer">
+                <input type="checkbox" name="remember" class="checkbox checkbox-sm">
+                Ingat saya
+            </label>
+            <a href="{{ route('password.request') }}" class="link link-primary text-sm">Lupa kata sandi?</a>
+        </div>
 
         <button type="submit" class="btn btn-primary w-full">
             Masuk

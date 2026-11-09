@@ -6,4 +6,5 @@ enum TransactionSource: string
 {
     case Chat = 'chat';
     case Manual = 'manual';
+    case Rutin = 'rutin';
 }

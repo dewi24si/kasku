@@ -1,10 +1,13 @@
 @php $log = App\Models\AiFunctionLog::where('user_id', auth()->id())->find($attachment['log_id']); @endphp
 @if ($log)
-    @php $isDelete = $log->function_name === 'hapus_transaksi'; @endphp
+    @php
+        $isDelete = $log->function_name === 'hapus_transaksi';
+        $isDeactivate = $log->function_name === 'nonaktifkan_transaksi_rutin';
+    @endphp
     <div class="w-full max-w-xs rounded-box border border-base-300 bg-base-100 p-4 md:max-w-sm">
         <div class="mb-3 flex items-center justify-between">
-            <p class="label-struk">{{ $isDelete ? 'Konfirmasi hapus' : 'Konfirmasi ubah' }}</p>
-            <i data-lucide="{{ $isDelete ? 'trash-2' : 'pencil' }}" class="size-4 text-neutral"></i>
+            <p class="label-struk">{{ $isDelete ? 'Konfirmasi hapus' : ($isDeactivate ? 'Konfirmasi nonaktifkan' : 'Konfirmasi ubah') }}</p>
+            <i data-lucide="{{ $isDelete ? 'trash-2' : ($isDeactivate ? 'repeat' : 'pencil') }}" class="size-4 text-neutral"></i>
         </div>
 
         @if (! empty($attachment['preview']['before']))
@@ -13,6 +16,9 @@
                 <x-ledger-leader />
                 <span class="rupiah">Rp{{ number_format($attachment['preview']['before']['amount'] ?? 0, 0, ',', '.') }}</span>
             </div>
+            @if (! empty($attachment['preview']['before']['schedule']))
+                <p class="-mt-2 mb-3 text-xs text-neutral">{{ $attachment['preview']['before']['schedule'] }}</p>
+            @endif
         @endif
 
         @if ($log->status === App\AiFunctionStatus::PendingConfirmation)

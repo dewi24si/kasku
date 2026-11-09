@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['user_id', 'category_id', 'type', 'amount', 'description', 'transaction_date', 'source', 'chat_message_id'])]
+#[Fillable(['user_id', 'category_id', 'type', 'amount', 'description', 'transaction_date', 'source', 'chat_message_id', 'recurring_transaction_id'])]
 class Transaction extends Model
 {
     /** @use HasFactory<TransactionFactory> */
@@ -69,5 +69,10 @@ class Transaction extends Model
     public function chatMessage(): BelongsTo
     {
         return $this->belongsTo(ChatMessage::class);
+    }
+
+    public function recurringTransaction(): BelongsTo
+    {
+        return $this->belongsTo(RecurringTransaction::class);
     }
 }

@@ -13,6 +13,7 @@ import {
     Check,
     ChevronLeft,
     ChevronRight,
+    CircleCheck,
     Clock,
     Compass,
     createIcons,
@@ -36,6 +37,7 @@ import {
     PiggyBank,
     Plus,
     Receipt,
+    Repeat,
     RotateCcw,
     Search,
     Send,
@@ -73,6 +75,7 @@ const icons = {
     Check,
     ChevronLeft,
     ChevronRight,
+    CircleCheck,
     Clock,
     Compass,
     Download,
@@ -95,6 +98,7 @@ const icons = {
     PiggyBank,
     Plus,
     Receipt,
+    Repeat,
     RotateCcw,
     Search,
     Send,
@@ -231,6 +235,7 @@ const INSTALL_SHOWN_SESSION_KEY = 'kasku-install-popup-shown';
 const INSTALL_POPUP_DELAY_MS = 3000;
 const INSTALL_LATER_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
 const INSTALL_POPUP_OFFSET_PROPERTY = '--install-popup-offset';
+const OPEN_INSTALL_GUIDE_EVENT = 'kasku-open-install-guide';
 
 let deferredInstallPrompt = null;
 
@@ -317,6 +322,7 @@ function installGuide(isPopup = false) {
         visible: false,
         popupDelayPassed: false,
         hiddenForChatInput: false,
+        openedManually: false,
         cleanupCallbacks: [],
 
         init() {
@@ -344,6 +350,9 @@ function installGuide(isPopup = false) {
 
                 return;
             }
+
+            // Dibuka manual (misalnya dari checklist "Mulai di sini"), jadi tidak terikat aturan tampil otomatis.
+            this.listen(window, OPEN_INSTALL_GUIDE_EVENT, () => this.openManually());
 
             if (this.isPopupBlocked()) {
                 return;
@@ -418,7 +427,7 @@ function installGuide(isPopup = false) {
                 return;
             }
 
-            if (this.mode === 'unsupported') {
+            if (this.mode === 'unsupported' && !this.openedManually) {
                 this.hide();
 
                 return;
@@ -436,7 +445,20 @@ function installGuide(isPopup = false) {
 
         hide() {
             this.visible = false;
+            this.openedManually = false;
             this.updatePopupOffset();
+        },
+
+        openManually() {
+            if (this.mode === 'installed') {
+                return;
+            }
+
+            this.openedManually = true;
+            this.hiddenForChatInput = false;
+            this.visible = true;
+            markInstallPopupShownThisSession();
+            this.$nextTick(() => this.updatePopupOffset());
         },
 
         /*
@@ -486,9 +508,49 @@ function installGuide(isPopup = false) {
     };
 }
 
+/**
+ * Checklist "Mulai di sini" di Dashboard. Langkah transaksi dan budget dihitung server, langkah pasang di HP
+ * hanya bisa dideteksi di browser.
+ *
+ * @param {{ hasTransaction: boolean, hasBudget: boolean }} serverSteps
+ */
+function onboardingChecklist({ hasTransaction, hasBudget }) {
+    return {
+        hasTransaction,
+        hasBudget,
+        isInstalled: isRunningAsInstalledApp(),
+
+        init() {
+            const markInstalled = () => {
+                this.isInstalled = true;
+            };
+
+            window.addEventListener('kasku-installed', markInstalled);
+            this.removeInstalledListener = () => window.removeEventListener('kasku-installed', markInstalled);
+        },
+
+        destroy() {
+            this.removeInstalledListener?.();
+        },
+
+        get completedSteps() {
+            return [this.hasTransaction, this.hasBudget, this.isInstalled].filter(Boolean).length;
+        },
+
+        get isComplete() {
+            return this.completedSteps === 3;
+        },
+
+        openInstallGuide() {
+            window.dispatchEvent(new CustomEvent(OPEN_INSTALL_GUIDE_EVENT));
+        },
+    };
+}
+
 document.addEventListener('alpine:init', () => {
     window.Alpine.data('voiceInput', voiceInput);
     window.Alpine.data('installGuide', installGuide);
+    window.Alpine.data('onboardingChecklist', onboardingChecklist);
 });
 
 

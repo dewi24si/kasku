@@ -31,6 +31,90 @@
         </div>
     </div>
 
+    @if ($onboarding = $this->onboarding)
+        @php
+            $serverCompletedSteps = (int) $onboarding['hasTransaction'] + (int) $onboarding['hasBudget'];
+        @endphp
+
+        {{--
+            Checklist "Mulai di sini". Langkah transaksi dan budget dari server, langkah pasang di HP dicek Alpine.
+            wire:replace.self membuat Alpine dibuat ulang dengan status server terbaru setiap update (misalnya setelah
+            transaksi disimpan), tanpa wire:key yang ikut mengubah key komponen anak transaction-form.
+            Kalau langkah server sudah selesai semua, kartu disembunyikan dulu sampai Alpine tahu Kasku belum terpasang.
+        --}}
+        <section
+            wire:replace.self
+            x-data="onboardingChecklist(@js($onboarding))"
+            x-show="!isComplete"
+            @if ($serverCompletedSteps === 2) style="display: none" @endif
+            data-onboarding-checklist
+            aria-labelledby="onboarding-title"
+            class="rounded-box border border-base-300 bg-base-100 p-5"
+        >
+            <div class="flex items-start justify-between gap-3">
+                <div>
+                    <p class="label-struk">Mulai di sini</p>
+                    <h2 id="onboarding-title" class="mt-1 text-base font-semibold">Siapkan Kasku dalam 3 langkah</h2>
+                </div>
+                <p class="rupiah shrink-0 text-sm text-neutral" aria-label="Langkah selesai">
+                    <span x-text="completedSteps">{{ $serverCompletedSteps }}</span>/3
+                </p>
+            </div>
+
+            <ol class="mt-3 divide-y divide-base-300 border-t border-base-300">
+                @foreach ([
+                    ['done' => $onboarding['hasTransaction'], 'label' => 'Catat transaksi pertama lewat Chat', 'action' => 'Buka Chat', 'url' => route('chat')],
+                    ['done' => $onboarding['hasBudget'], 'label' => 'Atur budget bulanan', 'action' => 'Atur Budget', 'url' => route('budget')],
+                ] as $step)
+                    <li class="flex items-center gap-3 py-3" @if ($step['done']) data-step-done @endif>
+                        @if ($step['done'])
+                            <i data-lucide="circle-check" class="size-5 shrink-0 text-success" aria-hidden="true"></i>
+                            <span class="sr-only">Selesai:</span>
+                        @else
+                            <span class="size-5 shrink-0 rounded-full border border-base-300" aria-hidden="true"></span>
+                            <span class="sr-only">Belum:</span>
+                        @endif
+                        <span @class(['min-w-0 flex-1 text-sm', 'text-neutral line-through' => $step['done']])>{{ $step['label'] }}</span>
+                        @unless ($step['done'])
+                            <a href="{{ $step['url'] }}" class="btn btn-ghost btn-xs shrink-0 text-primary">
+                                {{ $step['action'] }}
+                                <i data-lucide="chevron-right" class="size-3.5"></i>
+                            </a>
+                        @endunless
+                    </li>
+                @endforeach
+
+                <li class="flex items-center gap-3 py-3">
+                    <span x-show="isInstalled" style="display: none" class="flex shrink-0">
+                        <i data-lucide="circle-check" class="size-5 text-success" aria-hidden="true"></i>
+                        <span class="sr-only">Selesai:</span>
+                    </span>
+                    <span x-show="!isInstalled" class="flex shrink-0">
+                        <span class="size-5 rounded-full border border-base-300" aria-hidden="true"></span>
+                        <span class="sr-only">Belum:</span>
+                    </span>
+                    <span class="min-w-0 flex-1 text-sm" x-bind:class="isInstalled && 'text-neutral line-through'">Pasang Kasku di HP</span>
+                    <button type="button" x-show="!isInstalled" x-on:click="openInstallGuide()" class="btn btn-ghost btn-xs shrink-0 text-primary">
+                        Lihat Cara
+                        <i data-lucide="chevron-right" class="size-3.5"></i>
+                    </button>
+                </li>
+            </ol>
+
+            <div class="mt-1 flex justify-end">
+                <button
+                    type="button"
+                    wire:click="dismissOnboarding"
+                    wire:loading.attr="disabled"
+                    wire:target="dismissOnboarding"
+                    class="btn btn-ghost btn-xs text-neutral"
+                >
+                    Sembunyikan
+                </button>
+            </div>
+        </section>
+    @endif
+
     {{-- Saldo sebagai angka utama, rincian buku kas di bawahnya (HP) atau di sampingnya (desktop). --}}
     <section class="rounded-box border border-base-300 bg-base-100 p-5 lg:grid lg:grid-cols-[1fr_22rem] lg:items-end lg:gap-10 lg:p-8">
         <div class="min-w-0">

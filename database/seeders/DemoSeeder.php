@@ -8,12 +8,14 @@ use App\Models\AiFunctionLog;
 use App\Models\Budget;
 use App\Models\Category;
 use App\Models\ChatMessage;
+use App\Models\RecurringTransaction;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Services\Ai\Contracts\AiFunction;
 use App\Services\Ai\Functions\CekBudgetFunction;
 use App\Services\Ai\Functions\RingkasanFunction;
 use App\Services\Ai\Functions\TambahTransaksiFunction;
+use App\Services\Recurring\RecurringTransactionScheduler;
 use App\TransactionSource;
 use App\TransactionType;
 use Illuminate\Database\Seeder;
@@ -68,6 +70,7 @@ class DemoSeeder extends Seeder
             $this->seedWeeklySpike($user, $today);
             $this->insertRows();
             $this->seedBudgets($user, $today);
+            $this->seedRecurringTransactions($user, $today);
             $this->seedChatConversation($user, $today);
         });
     }
@@ -97,12 +100,13 @@ class DemoSeeder extends Seeder
             ['email' => self::DEMO_EMAIL],
             ['name' => 'Demo Kasku', 'password' => $password],
         );
-        $user->forceFill(['email_verified_at' => now()])->save();
+        $user->forceFill(['email_verified_at' => now(), 'onboarding_dismissed_at' => now()])->save();
 
         ChatMessage::query()->where('user_id', $user->id)->delete();
         AiFunctionLog::query()->where('user_id', $user->id)->delete();
         Transaction::withTrashed()->where('user_id', $user->id)->forceDelete();
         Budget::query()->where('user_id', $user->id)->delete();
+        RecurringTransaction::query()->where('user_id', $user->id)->delete();
         Category::query()->where('user_id', $user->id)->delete();
 
         if ($isGeneratedPassword) {
@@ -234,6 +238,32 @@ class DemoSeeder extends Seeder
 
         $this->expense($user, $spikeDate, 'Belanja', 'Sepatu kuliah baru', 349_000, TransactionSource::Manual);
         $this->expense($user, $spikeDate, 'Belanja', 'Checkout keranjang belanja online', 128_000, TransactionSource::Chat);
+    }
+
+    /**
+     * Dua aturan transaksi rutin. Riwayat di atas sudah memuat bayar kos dan uang bulanan bulan ini secara
+     * manual, jadi aturan baru mulai jalan di kemunculan berikutnya (bulan depan) supaya tidak tercatat dobel.
+     */
+    private function seedRecurringTransactions(User $user, Carbon $today): void
+    {
+        $scheduler = app(RecurringTransactionScheduler::class);
+        $rules = [
+            ['description' => 'Bayar kos', 'category' => $this->expenseCategories->get('Tagihan'), 'type' => TransactionType::Pengeluaran, 'amount' => 800_000],
+            ['description' => 'Uang bulanan', 'category' => $this->incomeCategories->get('Uang Saku'), 'type' => TransactionType::Pemasukan, 'amount' => 1_500_000],
+        ];
+
+        foreach ($rules as $rule) {
+            RecurringTransaction::query()->create([
+                'user_id' => $user->id,
+                'category_id' => $rule['category']->id,
+                'type' => $rule['type'],
+                'amount' => $rule['amount'],
+                'description' => $rule['description'],
+                'day_of_month' => 1,
+                'next_run_date' => $scheduler->firstRunDateOnOrAfter(1, $today->copy()->addDay()),
+                'is_active' => true,
+            ]);
+        }
     }
 
     /**

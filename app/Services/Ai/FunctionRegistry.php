@@ -4,9 +4,12 @@ namespace App\Services\Ai;
 
 use App\Services\Ai\Contracts\AiFunction;
 use App\Services\Ai\Functions\AturBudgetFunction;
+use App\Services\Ai\Functions\AturTransaksiRutinFunction;
 use App\Services\Ai\Functions\CariTransaksiFunction;
 use App\Services\Ai\Functions\CekBudgetFunction;
 use App\Services\Ai\Functions\HapusTransaksiFunction;
+use App\Services\Ai\Functions\LihatTransaksiRutinFunction;
+use App\Services\Ai\Functions\NonaktifkanTransaksiRutinFunction;
 use App\Services\Ai\Functions\RingkasanFunction;
 use App\Services\Ai\Functions\TambahTransaksiFunction;
 use App\Services\Ai\Functions\TampilkanGrafikFunction;
@@ -26,6 +29,9 @@ class FunctionRegistry
         'tampilkan_grafik' => TampilkanGrafikFunction::class,
         'atur_budget' => AturBudgetFunction::class,
         'cek_budget' => CekBudgetFunction::class,
+        'atur_transaksi_rutin' => AturTransaksiRutinFunction::class,
+        'lihat_transaksi_rutin' => LihatTransaksiRutinFunction::class,
+        'nonaktifkan_transaksi_rutin' => NonaktifkanTransaksiRutinFunction::class,
     ];
 
     public function resolve(string $name): AiFunction

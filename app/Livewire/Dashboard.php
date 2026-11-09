@@ -44,10 +44,37 @@ class Dashboard extends Component
         $this->refreshData();
     }
 
+    public function dismissOnboarding(): void
+    {
+        auth()->user()->forceFill(['onboarding_dismissed_at' => now()])->save();
+
+        unset($this->onboarding);
+    }
+
+    /**
+     * Status checklist "Mulai di sini". Null kalau sudah disembunyikan. Langkah pasang di HP dicek di browser.
+     *
+     * @return array{hasTransaction: bool, hasBudget: bool}|null
+     */
+    #[Computed]
+    public function onboarding(): ?array
+    {
+        $user = auth()->user();
+
+        if ($user->onboarding_dismissed_at !== null) {
+            return null;
+        }
+
+        return [
+            'hasTransaction' => $user->transactions()->exists(),
+            'hasBudget' => $user->budgets()->exists(),
+        ];
+    }
+
     #[On('transaction-saved')]
     public function refreshData(): void
     {
-        unset($this->transactionsForPeriod, $this->summary, $this->recentTransactions, $this->expenseChart, $this->insights);
+        unset($this->transactionsForPeriod, $this->summary, $this->recentTransactions, $this->expenseChart, $this->insights, $this->onboarding);
 
         $this->dispatch('charts-updated');
     }

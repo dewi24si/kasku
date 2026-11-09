@@ -100,6 +100,8 @@
         Tambah Budget
     </button>
 
+    <livewire:recurring-transactions />
+
     @if ($showForm)
         <div class="fixed inset-0 z-40 flex items-end justify-center bg-black/40 sm:items-center" wire:click.self="closeForm">
             <div class="w-full max-w-sm rounded-t-box border border-base-300 bg-base-100 p-5 sm:rounded-box lg:max-w-md lg:p-6">

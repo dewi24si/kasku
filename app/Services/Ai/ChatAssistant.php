@@ -158,6 +158,7 @@ class ChatAssistant
     {
         return match ($functionName) {
             'hapus_transaksi' => 'Apakah Anda yakin ingin menghapus transaksi ini?',
+            'nonaktifkan_transaksi_rutin' => 'Nonaktifkan transaksi rutin ini? Transaksi yang sudah tercatat tidak ikut terhapus.',
             default => 'Apakah Anda ingin menyimpan perubahan ini?',
         };
     }
