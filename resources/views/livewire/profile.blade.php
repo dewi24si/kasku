@@ -66,6 +66,8 @@
         </div>
     </div>
 
+    <x-install-guide variant="card" />
+
     <div class="space-y-4 lg:grid lg:grid-cols-2 lg:items-start lg:gap-6 lg:space-y-0">
     <div class="space-y-4 lg:space-y-6">
     <div class="card border border-base-300 bg-base-100">

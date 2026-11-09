@@ -173,6 +173,8 @@
         </div>
     @endif
 
+    <x-install-guide variant="banner" class="mb-16 lg:mb-0" />
+
     <button
         type="button"
         wire:click="$dispatch('open-transaction-form')"
