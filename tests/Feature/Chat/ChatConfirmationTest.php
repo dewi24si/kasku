@@ -155,4 +155,81 @@ class ChatConfirmationTest extends TestCase
         $this->assertSame(AiFunctionStatus::PendingConfirmation, $log->refresh()->status);
         $this->assertDatabaseHas('transactions', ['id' => $transaction->id, 'deleted_at' => null]);
     }
+
+    public function test_update_confirmation_card_shows_old_and_new_values_only_for_changed_fields(): void
+    {
+        $this->travelTo('2026-11-11 10:00:00');
+        $user = User::factory()->create();
+        $food = Category::factory()->create(['user_id' => $user->id, 'name' => 'Makan & Minum', 'type' => TransactionType::Pengeluaran]);
+        $shopping = Category::factory()->create(['user_id' => $user->id, 'name' => 'Belanja', 'type' => TransactionType::Pengeluaran]);
+        $transaction = Transaction::factory()->create([
+            'user_id' => $user->id,
+            'category_id' => $food->id,
+            'type' => TransactionType::Pengeluaran,
+            'amount' => 40000,
+            'description' => 'Toko Sinar',
+            'transaction_date' => '2026-11-10',
+        ]);
+
+        $this->fakeClaudeToolUse('ubah_transaksi', [
+            'transaction_id' => $transaction->id,
+            'changes' => ['amount' => 16000, 'category_id' => $shopping->id],
+        ]);
+
+        Livewire::actingAs($user)->test(Chat::class)
+            ->set('message', 'ubah jadi 16 ribu, kategori belanja')
+            ->call('sendMessage')
+            ->assertSee('Konfirmasi ubah')
+            ->assertSee('Toko Sinar')
+            ->assertSee('10 Nov 2026')
+            ->assertSeeInOrder(['Nominal', 'Rp40.000', 'Rp16.000'])
+            ->assertSeeInOrder(['Kategori', 'Makan', 'Belanja'])
+            ->assertSeeHtml('<span class="line-through text-neutral rupiah">Rp40.000</span>')
+            ->assertSeeHtml('<span class="font-semibold rupiah">Rp16.000</span>')
+            ->assertDontSeeHtml('>Tanggal</p>')
+            ->assertDontSeeHtml('>Deskripsi</p>')
+            ->assertDontSeeHtml('>Tipe</p>');
+    }
+
+    public function test_update_confirmation_card_hides_category_row_when_only_amount_changes(): void
+    {
+        $user = User::factory()->create();
+        $category = Category::factory()->create(['user_id' => $user->id, 'name' => 'Transport', 'type' => TransactionType::Pengeluaran]);
+        $transaction = Transaction::factory()->create([
+            'user_id' => $user->id, 'category_id' => $category->id, 'type' => TransactionType::Pengeluaran, 'amount' => 20000,
+        ]);
+
+        $this->fakeClaudeToolUse('ubah_transaksi', ['transaction_id' => $transaction->id, 'changes' => ['amount' => 25000]]);
+
+        Livewire::actingAs($user)->test(Chat::class)
+            ->set('message', 'ubah jadi 25 ribu')
+            ->call('sendMessage')
+            ->assertSeeInOrder(['Nominal', 'Rp20.000', 'Rp25.000'])
+            ->assertDontSeeHtml('>Kategori</p>');
+    }
+
+    public function test_delete_confirmation_card_shows_description_category_date_and_amount(): void
+    {
+        $user = User::factory()->create();
+        $category = Category::factory()->create(['user_id' => $user->id, 'name' => 'Transport', 'type' => TransactionType::Pengeluaran]);
+        $transaction = Transaction::factory()->create([
+            'user_id' => $user->id,
+            'category_id' => $category->id,
+            'type' => TransactionType::Pengeluaran,
+            'amount' => 32000,
+            'description' => 'Warung Maju',
+            'transaction_date' => '2026-11-03',
+        ]);
+
+        $this->fakeClaudeToolUse('hapus_transaksi', ['transaction_id' => $transaction->id]);
+
+        Livewire::actingAs($user)->test(Chat::class)
+            ->set('message', 'hapus yang warung maju')
+            ->call('sendMessage')
+            ->assertSee('Konfirmasi hapus')
+            ->assertSee('Warung Maju')
+            ->assertSee('Transport')
+            ->assertSee('03 Nov 2026')
+            ->assertSee('Rp32.000');
+    }
 }

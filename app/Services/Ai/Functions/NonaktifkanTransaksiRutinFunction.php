@@ -41,7 +41,9 @@ class NonaktifkanTransaksiRutinFunction implements RequiresConfirmation
 
         return [
             'before' => [
-                'category' => ['name' => $rule->description],
+                'description' => $rule->description,
+                'category' => ['name' => $rule->category->name, 'icon' => $rule->category->icon],
+                'type' => $rule->type->value,
                 'amount' => $rule->amount,
                 'schedule' => $rule->scheduleLabel(),
             ],

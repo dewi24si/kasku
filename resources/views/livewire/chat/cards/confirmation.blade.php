@@ -3,6 +3,42 @@
     @php
         $isDelete = $log->function_name === 'hapus_transaksi';
         $isDeactivate = $log->function_name === 'nonaktifkan_transaksi_rutin';
+        $isUpdate = ! $isDelete && ! $isDeactivate;
+
+        $before = $attachment['preview']['before'] ?? [];
+        $after = $attachment['preview']['after'] ?? null;
+
+        $formatRupiah = fn (mixed $amount): string => \App\Services\Format\Rupiah::format((int) $amount);
+        $formatDate = fn (?string $date): string => filled($date) ? \Illuminate\Support\Carbon::parse($date)->translatedFormat('d M Y') : '-';
+        $formatType = fn (?string $type): string => filled($type) ? ucfirst($type) : '-';
+
+        // Pratinjau lama untuk transaksi rutin menyimpan deskripsi di category.name dan belum punya "description".
+        $isLegacyRecurringPreview = $isDeactivate && ! array_key_exists('description', $before);
+        $title = $isLegacyRecurringPreview
+            ? ($before['category']['name'] ?? '-')
+            : (($before['description'] ?? null) ?: ($before['category']['name'] ?? '-'));
+
+        $changes = [];
+
+        if ($isUpdate && is_array($after)) {
+            $fieldChanges = [
+                'Nominal' => [$before['amount'] ?? null, $after['amount'] ?? null, $formatRupiah, true],
+                'Kategori' => [$before['category']['id'] ?? null, $after['category']['id'] ?? null, null, false],
+                'Tipe' => [$before['type'] ?? null, $after['type'] ?? null, $formatType, false],
+                'Deskripsi' => [$before['description'] ?? null, $after['description'] ?? null, fn (?string $text): string => filled($text) ? $text : '-', false],
+                'Tanggal' => [$before['transaction_date'] ?? null, $after['transaction_date'] ?? null, $formatDate, false],
+            ];
+
+            foreach ($fieldChanges as $label => [$old, $new, $format, $isMoney]) {
+                if ((string) $old === (string) $new) {
+                    continue;
+                }
+
+                $changes[] = $label === 'Kategori'
+                    ? ['label' => $label, 'old' => $before['category']['name'] ?? '-', 'new' => $after['category']['name'] ?? '-', 'money' => false]
+                    : ['label' => $label, 'old' => $format($old), 'new' => $format($new), 'money' => $isMoney];
+            }
+        }
     @endphp
     <div class="w-full max-w-xs rounded-box border border-base-300 bg-base-100 p-4 md:max-w-sm">
         <div class="mb-3 flex items-center justify-between">
@@ -10,15 +46,49 @@
             <i data-lucide="{{ $isDelete ? 'trash-2' : ($isDeactivate ? 'repeat' : 'pencil') }}" class="size-4 text-neutral"></i>
         </div>
 
-        @if (! empty($attachment['preview']['before']))
-            <div class="mb-3 flex items-baseline gap-2 text-sm">
-                <span class="truncate">{{ $attachment['preview']['before']['category']['name'] ?? '' }}</span>
-                <x-ledger-leader />
-                <span class="rupiah">Rp{{ number_format($attachment['preview']['before']['amount'] ?? 0, 0, ',', '.') }}</span>
+        @if ($before !== [])
+            <div class="mb-3">
+                @if ($isUpdate)
+                    <p class="truncate text-sm font-medium">{{ $title }} &middot; {{ $formatDate($before['transaction_date'] ?? null) }}</p>
+                    <p class="truncate text-xs text-neutral">
+                        {{ $before['category']['name'] ?? '-' }} &middot; {{ $formatType($before['type'] ?? null) }} &middot; <span class="rupiah">{{ $formatRupiah($before['amount'] ?? 0) }}</span>
+                    </p>
+
+                    @if ($changes !== [])
+                        <div class="mt-2.5 space-y-1.5 border-t border-dashed border-base-content/30 pt-2.5">
+                            @foreach ($changes as $change)
+                                <div class="flex items-baseline gap-2 text-sm">
+                                    <p class="label-struk w-20 shrink-0">{{ $change['label'] }}</p>
+                                    <p class="min-w-0 flex-1 break-words">
+                                        <span @class(['line-through text-neutral', 'rupiah' => $change['money']])>{{ $change['old'] }}</span>
+                                        <span class="text-neutral" aria-label="menjadi">&rarr;</span>
+                                        <span @class(['font-semibold', 'rupiah' => $change['money']])>{{ $change['new'] }}</span>
+                                    </p>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+                @else
+                    <div class="flex items-baseline gap-2 text-sm">
+                        <p class="min-w-0 truncate font-medium">{{ $title }}</p>
+                        <x-ledger-leader />
+                        <p @class(['rupiah shrink-0', 'text-error' => $isDelete])>{{ $formatRupiah($before['amount'] ?? 0) }}</p>
+                    </div>
+
+                    @if ($isDelete)
+                        <p class="truncate text-xs text-neutral">
+                            {{ $before['category']['name'] ?? '-' }} &middot; {{ $formatDate($before['transaction_date'] ?? null) }} &middot; {{ $formatType($before['type'] ?? null) }}
+                        </p>
+                    @else
+                        <p class="truncate text-xs text-neutral">
+                            @unless ($isLegacyRecurringPreview)
+                                {{ $before['category']['name'] ?? '-' }} &middot;
+                            @endunless
+                            {{ $before['schedule'] ?? '' }}
+                        </p>
+                    @endif
+                @endif
             </div>
-            @if (! empty($attachment['preview']['before']['schedule']))
-                <p class="-mt-2 mb-3 text-xs text-neutral">{{ $attachment['preview']['before']['schedule'] }}</p>
-            @endif
         @endif
 
         @if ($log->status === App\AiFunctionStatus::PendingConfirmation)
