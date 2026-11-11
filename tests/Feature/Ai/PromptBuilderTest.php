@@ -69,6 +69,50 @@ class PromptBuilderTest extends TestCase
         $this->assertStringNotContainsString('Kalau user hanya mengobrol biasa', $prompt);
     }
 
+    public function test_prompt_includes_receipt_reading_rules(): void
+    {
+        $user = User::factory()->create();
+
+        $prompt = app(PromptBuilder::class)->build($user);
+
+        $this->assertStringContainsString('Aturan membaca foto struk/bukti bayar:', $prompt);
+        $this->assertStringContainsString('Nominal yang dicatat adalah uang yang BENAR-BENAR dibayar user', $prompt);
+        $this->assertStringContainsString('Tunai/Cash, Debit, Kredit, QRIS, transfer, atau e-wallet', $prompt);
+        $this->assertStringContainsString('Jangan memakai Subtotal atau Total kalau masih ada potongan setelah Total', $prompt);
+        $this->assertStringContainsString('Voucher, poin, kupon, atau saldo promo yang mengurangi pembayaran TIDAK ikut dihitung sebagai pengeluaran', $prompt);
+        $this->assertStringContainsString('lebih dari satu metode bayar dengan uang sungguhan', $prompt);
+        $this->assertStringContainsString('jumlahkan semuanya', $prompt);
+        $this->assertStringContainsString('Kalau tidak ada baris metode pembayaran, pakai Total (setelah diskon)', $prompt);
+        $this->assertStringContainsString('Kalau struk ambigu atau nominalnya tidak terbaca jelas, tanyakan dulu ke user sebelum mencatat', $prompt);
+        $this->assertStringContainsString('"Tercatat Rp16.000 (total Rp40.000, dibayar voucher Rp24.000)"', $prompt);
+        $this->assertStringContainsString('Deskripsi cukup nama toko yang ringkas (misalnya "Toko Sinar"), tanpa alamat cabang', $prompt);
+    }
+
+    public function test_prompt_includes_cash_change_rule_and_fictional_receipt_examples(): void
+    {
+        $user = User::factory()->create();
+
+        $prompt = app(PromptBuilder::class)->build($user);
+
+        $this->assertStringContainsString('nominal yang dicatat adalah tunai dikurangi kembalian (sama dengan Total), bukan jumlah tunai yang diserahkan', $prompt);
+        $this->assertStringContainsString('Contoh 1, Toko Sinar: Subtotal 48.000, Diskon 8.000, Total 40.000, Voucher 24.000, QRIS 16.000. Catat Rp16.000', $prompt);
+        $this->assertStringContainsString('Contoh 2, Warung Maju: Total 32.000, Tunai 50.000, Kembali 18.000. Catat Rp32.000', $prompt);
+        $this->assertStringContainsString('bukan Rp50.000', $prompt);
+    }
+
+    public function test_prompt_does_not_contain_the_real_test_receipt(): void
+    {
+        $user = User::factory()->create();
+
+        $prompt = app(PromptBuilder::class)->build($user);
+
+        $this->assertStringNotContainsStringIgnoringCase('Roti\'O', $prompt);
+
+        foreach (['15.000', '4.500', '10.500', '10.499', 'Rp1 '] as $realReceiptAmount) {
+            $this->assertStringNotContainsString($realReceiptAmount, $prompt);
+        }
+    }
+
     public function test_prompt_forbids_emoji_in_replies(): void
     {
         $user = User::factory()->create();
