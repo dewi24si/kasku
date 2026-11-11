@@ -7,12 +7,12 @@ use App\ChatRole;
 use App\Exceptions\ClaudeRequestException;
 use App\Models\AiFunctionLog;
 use App\Models\ChatMessage;
+use App\Models\Transaction;
 use App\Models\User;
 use App\Services\Ai\Contracts\RequiresConfirmation;
 use App\Services\Claude\ClaudeClient;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class ChatAssistant
@@ -28,8 +28,8 @@ class ChatAssistant
         $attachment = null;
 
         if ($photo) {
-            $path = $photo->store("receipts/{$user->id}", 'public');
-            $attachment = ['type' => 'receipt_photo', 'url' => Storage::url($path)];
+            $path = $photo->store("receipts/{$user->id}", Transaction::RECEIPT_DISK);
+            $attachment = ['type' => 'receipt_photo', 'path' => $path];
         }
 
         $userMessage = $user->chatMessages()->create([

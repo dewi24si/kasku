@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ReceiptPhotoController;
 use App\Http\Controllers\TransactionExportController;
 use App\Livewire\Budget;
 use App\Livewire\Chat;
@@ -35,6 +36,11 @@ Route::livewire('/riwayat', TransactionHistory::class)
 Route::middleware('auth')->controller(TransactionExportController::class)->group(function (): void {
     Route::get('/riwayat/ekspor', 'csv')->name('riwayat.ekspor');
     Route::get('/riwayat/ekspor-pdf', 'pdf')->name('riwayat.ekspor-pdf');
+});
+
+Route::middleware('auth')->controller(ReceiptPhotoController::class)->group(function (): void {
+    Route::get('/struk/foto/{chatMessage}', 'chatMessage')->name('struk.foto-chat');
+    Route::get('/struk/{transaction}', 'transaction')->name('struk.foto');
 });
 
 require __DIR__.'/auth.php';

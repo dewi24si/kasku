@@ -110,6 +110,9 @@
                                     <div class="min-w-0 flex-1">
                                         <div class="flex items-baseline gap-2">
                                             <p class="grow-0 truncate text-sm font-medium">{{ $transaction->description ?: $transaction->category->name }}</p>
+                                            @if ($transaction->hasReceiptPhoto())
+                                                <x-receipt-indicator />
+                                            @endif
                                             <x-ledger-leader />
                                             <p class="rupiah shrink-0 grow-0 text-sm {{ $isExpense ? 'text-error' : 'text-success' }}">
                                                 {{ $isExpense ? '-' : '+' }}Rp{{ number_format($transaction->amount, 0, ',', '.') }}
@@ -151,7 +154,12 @@
                                         </div>
                                     </td>
                                     <td class="max-w-64">
-                                        <p class="truncate" title="{{ $transaction->description }}">{{ $transaction->description ?: '-' }}</p>
+                                        <div class="flex items-center gap-1.5">
+                                            <p class="truncate" title="{{ $transaction->description }}">{{ $transaction->description ?: '-' }}</p>
+                                            @if ($transaction->hasReceiptPhoto())
+                                                <x-receipt-indicator />
+                                            @endif
+                                        </div>
                                     </td>
                                     <td>
                                         <span @class([

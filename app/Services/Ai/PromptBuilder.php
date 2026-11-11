@@ -87,6 +87,9 @@ class PromptBuilder
             - Kalau struk menampilkan uang tunai yang diserahkan dan kembalian, nominal yang dicatat adalah tunai dikurangi kembalian (sama dengan Total), bukan jumlah tunai yang diserahkan.
             - Kalau ada voucher atau diskon besar, sebutkan singkat di balasan supaya user bisa mengecek, misalnya: "Tercatat Rp16.000 (total Rp40.000, dibayar voucher Rp24.000)".
             - Deskripsi cukup nama toko yang ringkas (misalnya "Toko Sinar"), tanpa alamat cabang.
+            - Isi receipt_items di tambah_transaksi dengan daftar barang di struk (name, quantity kalau ada, unit_price kalau ada, subtotal per baris). Isi HANYA kalau transaksi berasal dari foto struk dan barangnya terbaca jelas. Jangan mengarang barang; kalau barang tidak terbaca, kosongkan receipt_items. Maksimal 50 barang.
+            - amount tetap mengikuti aturan "uang yang benar-benar dibayar" di atas. Jumlah subtotal receipt_items boleh berbeda dari amount karena diskon atau voucher.
+            - Kalau satu struk dipecah jadi beberapa transaksi (misalnya beda kategori), masukkan setiap barang ke receipt_items transaksi yang sesuai.
             - Contoh 1, Toko Sinar: Subtotal 48.000, Diskon 8.000, Total 40.000, Voucher 24.000, QRIS 16.000. Catat Rp16.000 dan sebutkan voucher di balasan.
             - Contoh 2, Warung Maju: Total 32.000, Tunai 50.000, Kembali 18.000. Catat Rp32.000 (uang tunai yang diserahkan dikurangi kembalian), bukan Rp50.000.
 

@@ -41,6 +41,12 @@
                     <p class="truncate text-xs text-neutral">
                         {{ $trx['category']['name'] ?? '-' }} &middot; {{ \Illuminate\Support\Carbon::parse($trx['transaction_date'])->translatedFormat('d M Y') }}
                     </p>
+                    @if (! empty($trx['receipt_items_count']))
+                        <p class="mt-0.5 inline-flex items-center gap-1 text-xs text-neutral">
+                            <i data-lucide="receipt" class="size-3"></i>
+                            {{ $trx['receipt_items_count'] }} barang
+                        </p>
+                    @endif
                 </div>
             </div>
         @endforeach

@@ -26,6 +26,7 @@ class ChatPhotoUploadTest extends TestCase
         parent::setUp();
 
         Storage::fake('public');
+        Storage::fake('local');
     }
 
     public function test_can_send_a_photo_without_text_and_it_triggers_tambah_transaksi(): void
@@ -52,7 +53,7 @@ class ChatPhotoUploadTest extends TestCase
         ]);
     }
 
-    public function test_photo_is_stored_permanently_and_attached_to_the_user_message(): void
+    public function test_photo_is_stored_on_the_private_disk_and_attached_to_the_user_message(): void
     {
         $user = User::factory()->create();
 
@@ -70,8 +71,9 @@ class ChatPhotoUploadTest extends TestCase
         $this->assertNotNull($userMessage->attachment);
         $this->assertSame('receipt_photo', $userMessage->attachment['type']);
 
-        $storedPath = str_replace('/storage/', '', $userMessage->attachment['url']);
-        Storage::disk('public')->assertExists($storedPath);
+        $this->assertArrayNotHasKey('url', $userMessage->attachment);
+        Storage::disk('local')->assertExists($userMessage->attachment['path']);
+        Storage::disk('public')->assertMissing($userMessage->attachment['path']);
     }
 
     public function test_sends_image_content_block_to_claude(): void

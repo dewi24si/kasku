@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kasku-v21';
+const CACHE_NAME = 'kasku-v22';
 const OFFLINE_URL = '/offline.html';
 const PRECACHE_URLS = [OFFLINE_URL, '/manifest.json', '/icons/icon-192.png?v=2', '/icons/icon-512.png?v=2'];
 
@@ -25,6 +25,13 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
+    const url = new URL(request.url);
+
+    // Foto struk bersifat privat: jangan pernah disimpan di cache supaya tidak tertinggal setelah logout.
+    if (url.pathname.startsWith('/struk/')) {
+        return;
+    }
+
     if (request.mode === 'navigate') {
         event.respondWith(
             fetch(request)
@@ -37,8 +44,6 @@ self.addEventListener('fetch', (event) => {
         );
         return;
     }
-
-    const url = new URL(request.url);
 
     if (url.pathname.startsWith('/build/') || url.pathname.startsWith('/icons/')) {
         event.respondWith(

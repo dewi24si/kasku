@@ -111,6 +111,11 @@
     color: var(--color-neutral);
 }
 
+/* Sembunyikan elemen Alpine (misalnya modal foto struk) sampai Alpine siap. */
+[x-cloak] {
+    display: none !important;
+}
+
 @keyframes fade-up {
     from {
         opacity: 0;

@@ -11,13 +11,19 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['user_id', 'category_id', 'type', 'amount', 'description', 'transaction_date', 'source', 'chat_message_id', 'recurring_transaction_id'])]
+#[Fillable(['user_id', 'category_id', 'type', 'amount', 'description', 'transaction_date', 'source', 'chat_message_id', 'receipt_path', 'recurring_transaction_id'])]
 class Transaction extends Model
 {
     /** @use HasFactory<TransactionFactory> */
     use HasFactory, SoftDeletes;
+
+    /**
+     * Disk privat untuk foto struk. File hanya bisa diambil lewat route ber-auth (ReceiptPhotoController).
+     */
+    public const RECEIPT_DISK = 'local';
 
     /**
      * @return array<string, string>
@@ -74,5 +80,18 @@ class Transaction extends Model
     public function recurringTransaction(): BelongsTo
     {
         return $this->belongsTo(RecurringTransaction::class);
+    }
+
+    /**
+     * Daftar barang yang terbaca dari foto struk.
+     */
+    public function items(): HasMany
+    {
+        return $this->hasMany(TransactionItem::class);
+    }
+
+    public function hasReceiptPhoto(): bool
+    {
+        return filled($this->receipt_path);
     }
 }

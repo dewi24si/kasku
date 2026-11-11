@@ -29,6 +29,20 @@ class FunctionDefinitions
                                     'amount' => ['type' => 'integer', 'description' => 'Jumlah dalam Rupiah, tanpa desimal.'],
                                     'description' => ['type' => 'string', 'description' => 'Catatan singkat opsional.'],
                                     'transaction_date' => ['type' => 'string', 'description' => 'Tanggal transaksi, format YYYY-MM-DD. Resolusikan kata relatif seperti "kemarin" menggunakan tanggal hari ini yang diberikan.'],
+                                    'receipt_items' => [
+                                        'type' => 'array',
+                                        'description' => 'Opsional. Daftar barang di foto struk untuk transaksi ini. Isi HANYA kalau transaksi berasal dari foto struk dan barangnya terbaca jelas. Jangan mengarang barang. Maksimal 50 barang.',
+                                        'items' => [
+                                            'type' => 'object',
+                                            'properties' => [
+                                                'name' => ['type' => 'string', 'description' => 'Nama barang seperti tertulis di struk, maksimal 100 karakter.'],
+                                                'quantity' => ['type' => 'number', 'description' => 'Jumlah/qty barang, kalau tertulis.'],
+                                                'unit_price' => ['type' => 'integer', 'description' => 'Harga satuan dalam Rupiah, kalau tertulis.'],
+                                                'subtotal' => ['type' => 'integer', 'description' => 'Harga total baris barang ini dalam Rupiah (sebelum diskon/voucher struk).'],
+                                            ],
+                                            'required' => ['name', 'subtotal'],
+                                        ],
+                                    ],
                                 ],
                                 'required' => ['type', 'category_id', 'amount', 'transaction_date'],
                             ],

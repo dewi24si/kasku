@@ -78,6 +78,29 @@ class TransactionForm extends Component
             ->get();
     }
 
+    /**
+     * Transaksi yang sedang diubah beserta barang struknya, kalau transaksi itu berasal dari foto struk.
+     * Null untuk transaksi baru, manual, atau dari chat teks biasa.
+     */
+    #[Computed]
+    public function receipt(): ?Transaction
+    {
+        if ($this->editingTransactionId === null) {
+            return null;
+        }
+
+        $transaction = Transaction::query()
+            ->where('user_id', auth()->id())
+            ->with(['items' => fn ($query) => $query->orderBy('id')])
+            ->find($this->editingTransactionId);
+
+        if (! $transaction || (! $transaction->hasReceiptPhoto() && $transaction->items->isEmpty())) {
+            return null;
+        }
+
+        return $transaction;
+    }
+
     #[On('open-transaction-form')]
     public function open(?int $transactionId = null): void
     {
@@ -104,7 +127,7 @@ class TransactionForm extends Component
             $this->transactionDate = $transaction->transaction_date->format('Y-m-d');
         }
 
-        unset($this->categories);
+        unset($this->categories, $this->receipt);
         $this->showForm = true;
         $this->dispatch('transaction-form-opened');
     }
